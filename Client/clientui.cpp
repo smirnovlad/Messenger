@@ -85,14 +85,17 @@ void ClientUI::setUserListWidget()
     this->client->clientSocket->sendContactListRequest("", "");
 }
 
-void ClientUI::setChatWidget()
+void ClientUI::setChatWidget(QString name)
 {
     qDebug() << "Switched to chat";
     this->clearLayout();
     Chat *chatWidget = new Chat(this);
+    chatWidget->ui->userNameLabel->setText(name);
 
     connect(chatWidget->ui->backButton, SIGNAL(clicked()), this,
             SLOT(setUserListWidget()));
+    connect(chatWidget, SIGNAL(sendMessageRequest(QString, QString)), this->client->clientSocket,
+            SLOT(sendSendMessageRequest(QString, QString)));
 
     ui->contentWidget->layout()->addWidget(chatWidget);
 }
@@ -139,7 +142,7 @@ void ClientUI::handleChat(QList<QString> &fromUser, QList<QString> &toUser,
 {
     QLayoutItem *activeItem = getActiveItem();
     // qDebug() << "count: " << ui->contentWidget->layout()->count();
-    static_cast<Chat*>(activeItem->widget())->setMessageList(fromUser, toUser, text, timestamp);
+    static_cast<Chat*>(activeItem->widget())->setMessageList(fromUser, toUser, text, timestamp, client->userLogin);
 }
 
 void ClientUI::sendChatRequest(QListWidgetItem* contact)
@@ -151,6 +154,17 @@ void ClientUI::sendChatRequest(QListWidgetItem* contact)
     // qDebug() << "id: " << userWidget->ui->IDLabel->text();
     QString secondUser = userWidget->ui->loginLabel->text();
     qDebug() << "secondUser: " << secondUser;
-    this->setChatWidget();
-    // client->clientSocket->sendChatRequest(client->userLogin, secondUser);
+    this->setChatWidget(secondUser);
+    client->clientSocket->sendChatRequest(secondUser);
+}
+
+void ClientUI::handleSendMessage(QPair<QString, QString> result)
+{
+    if (result.first == "SCSS") {
+        QLayoutItem *activeItem = getActiveItem();
+        static_cast<Chat*>(activeItem->widget())->addMessage(result.second);
+        QMessageBox::information(this, "Sending success", "Message was sent");
+    } else {
+        QMessageBox::warning(this, "Sending failed", "Message was not sent");
+    }
 }

@@ -24,6 +24,7 @@ public:
     int32_t addUser(QString login, QString password);
     void getContactList(QString& contactList);
     void getMessageList(QString& messageList, QString firstUser, QString secondUser);
+    void sendMessage(QString firstUser, QString secondUser, QString message, QString timestamp);
 };
 
 #endif // SQLITEDB_H

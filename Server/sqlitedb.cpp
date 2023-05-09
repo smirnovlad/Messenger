@@ -107,7 +107,7 @@ void SQLiteDB::getMessageList(QString &messageList, QString firstUser, QString s
     QString chatName = "Chat_" + firstUser + "_" + secondUser;
     if (query.exec("CREATE TABLE IF NOT EXISTS " + chatName +
                    " (id INTEGER PRIMARY KEY, fromID INTEGER NOT NULL, toID INTEGER NOT NULL, "
-                   "message TEXT NOT NULL, timestamp TEXT NOT NULL")) {
+                   "message TEXT NOT NULL, timestamp TEXT NOT NULL)")) {
         if (query.exec("SELECT * FROM " + chatName)) {
             while (query.next()) {
                 if (messageList.length()) {
@@ -121,5 +121,37 @@ void SQLiteDB::getMessageList(QString &messageList, QString firstUser, QString s
             return;
         }
     }
-    qDebug() << "Bad query";
+    qDebug() << "Bad query while creating new chat table.";
+}
+
+void SQLiteDB::sendMessage(QString firstUser, QString secondUser, QString message, QString timestamp)
+{
+    QSqlQuery query(DB);
+    QString chatName = "Chat_" + firstUser + "_" + secondUser;
+    int32_t fromID = findUser(firstUser);
+    int32_t toID = findUser(secondUser);
+
+    query.prepare("INSERT INTO " + chatName + "(fromID, toID, message, timestamp) "
+                  "VALUES (:fromID, :toID, :message, :timestamp)");
+    query.bindValue(":fromID", fromID);
+    query.bindValue(":toID", toID);
+    query.bindValue(":message", message);
+    query.bindValue(":timestamp", timestamp);
+    query.exec();
+
+    chatName = "Chat_" + secondUser + "_" + firstUser;
+
+    if (query.exec("CREATE TABLE IF NOT EXISTS " + chatName +
+                   " (id INTEGER PRIMARY KEY, fromID INTEGER NOT NULL, toID INTEGER NOT NULL, "
+                   "message TEXT NOT NULL, timestamp TEXT NOT NULL)")) {
+        query.prepare("INSERT INTO " + chatName + "(fromID, toID, message, timestamp) "
+                      "VALUES (:fromID, :toID, :message, :timestamp)");
+        query.bindValue(":fromID", fromID);
+        query.bindValue(":toID", toID);
+        query.bindValue(":message", message);
+        query.bindValue(":timestamp", timestamp);
+        query.exec();
+    } else {
+        qDebug() << "Bad query while creating chat table for second user.";
+    }
 }

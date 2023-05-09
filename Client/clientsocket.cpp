@@ -36,7 +36,8 @@ void ClientSocket::getResponse()
                          REGISTRATION_RESPONSE,
                          AUTHORIZATION_RESPONSE,
                          CONTACT_LIST_RESPONSE,
-                         MESSAGE_LIST_RESPONSE
+                         MESSAGE_LIST_RESPONSE,
+                         SEND_MESSAGE_RESPONSE
                        };
     COMMAND command = COMMAND::NONE;
 
@@ -48,6 +49,8 @@ void ClientSocket::getResponse()
         command = COMMAND::CONTACT_LIST_RESPONSE;
     } else if (packetType == "CHAT") {
         command = COMMAND::MESSAGE_LIST_RESPONSE;
+    } else if (packetType == "MSSG") {
+        command = COMMAND::SEND_MESSAGE_RESPONSE;
     }
 
     switch (command)
@@ -80,15 +83,26 @@ void ClientSocket::getResponse()
         case COMMAND::MESSAGE_LIST_RESPONSE:
         {
             QList<QString> fromUser, toUser, text, timestamp;
-            QStringList tuples = requestSeparation(message, " /n ");
-            for (QString& tupleString: tuples) {
-                QStringList tuple = requestSeparation(tupleString, " /s ");
-                fromUser.push_back(tuple[0]);
-                toUser.push_back(tuple[1]);
-                text.push_back(tuple[2]);
-                timestamp.push_back(tuple[3]);
+            qDebug() << "Message list response: " << message;
+            if (message.length()) {
+                QStringList tuples = requestSeparation(message, " /n ");
+                for (QString& tupleString: tuples) {
+                    QStringList tuple = requestSeparation(tupleString, " /s ");
+                    fromUser.push_back(tuple[0]);
+                    toUser.push_back(tuple[1]);
+                    text.push_back(tuple[2]);
+                    timestamp.push_back(tuple[3]);
+                }
             }
             client->clientUI->handleChat(fromUser, toUser, text, timestamp);
+            break;
+        }
+
+        case COMMAND::SEND_MESSAGE_RESPONSE:
+        {
+            QStringList splitWords = requestSeparation(message, " /s ");
+            QPair<QString, QString> result = {splitWords[0], splitWords[1]};
+            client->clientUI->handleSendMessage(result);
             break;
         }
     }
@@ -120,11 +134,20 @@ void ClientSocket::sendContactListRequest(QString login, QString password)
     tcpSocket->write(request.toUtf8());
 }
 
-void ClientSocket::sendChatRequest(QString firstUser, QString secondUser)
+void ClientSocket::sendChatRequest(QString secondUser)
 {
-    qDebug() << "Chat requested. First user: " << firstUser <<
+    qDebug() << "Chat requested. First user: " << client->userLogin <<
                 ", second user: " << secondUser;
     QString request = "CHAT";
-    request.append(QString("%1 /s %2").arg(firstUser).arg(secondUser));
+    request.append(QString("%1 /s %2").arg(client->userLogin).arg(secondUser));
+    tcpSocket->write(request.toUtf8());
+}
+
+void ClientSocket::sendSendMessageRequest(QString secondUser, QString message)
+{
+    qDebug() << "Sending message requested. First user: " << client->userLogin <<
+                ", second user: " << secondUser << ". Message: " << message;
+    QString request = "MSSG";
+    request.append(QString("%1 /s %2 /s %3").arg(client->userLogin).arg(secondUser).arg(message));
     tcpSocket->write(request.toUtf8());
 }

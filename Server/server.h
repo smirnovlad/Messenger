@@ -43,6 +43,10 @@ private:
     void handleMessageListRequest(QTcpSocket *clientSocket, QString firstUser, QString secondUser);
     void sendMessageListResponse(QTcpSocket *clientSocket, QString& messageList);
 
+    void handleSendMessageRequest(QTcpSocket *clientSocket, QString firstUser, QString secondUser,
+                                  QString message);
+    void sendSendMessageResponse(QTcpSocket *clientSocket, QString message, QString timestamp);
+
 private slots:
     void handleConnectionRequest();
     void getRequest();

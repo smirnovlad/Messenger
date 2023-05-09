@@ -20,7 +20,15 @@ public:
 
 public:
     void setMessageList(QList<QString> &fromUser, QList<QString> &toUser,
-                        QList<QString> &text, QList<QString> &timestamp);
+                        QList<QString> &text, QList<QString> &timestamp,
+                        QString userName);
+    void addMessage(QString timestamp);
+
+private slots:
+    void sendMessage();
+
+signals:
+    void sendMessageRequest(QString secondUser, QString message);
 };
 
 #endif // CHAT_H

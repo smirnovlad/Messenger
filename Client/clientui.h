@@ -38,12 +38,13 @@ public:
     void handleContactList(const QList< QPair<QString, QString> >& result);
     void handleChat(QList<QString>& fromUser, QList<QString>& toUser,
                     QList<QString>& text, QList<QString>& timestamp);
+    void handleSendMessage(QPair<QString, QString> result);
 
 private slots:
     void setRegistrationWidget();
     void setAuthorizationWidget();
     void setUserListWidget();
-    void setChatWidget();
+    void setChatWidget(QString name);
     void sendChatRequest(QListWidgetItem* contact);
 };
 #endif // CLIENTUI_H

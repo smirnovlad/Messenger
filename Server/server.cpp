@@ -48,7 +48,8 @@ void Server::getRequest()
                          REGISTRATION_REQUEST,
                          AUTHORIZATION_REQUEST,
                          CONTACT_LIST_REQUEST,
-                         MESSAGE_LIST_REQUEST
+                         MESSAGE_LIST_REQUEST,
+                         SEND_MESSAGE_REQUEST
                        };
     COMMAND command = COMMAND::NONE;
 
@@ -62,6 +63,8 @@ void Server::getRequest()
         command = COMMAND::CONTACT_LIST_REQUEST;
     } else if (packetType == "CHAT") {
         command = COMMAND::MESSAGE_LIST_REQUEST;
+    } else if (packetType == "MSSG") {
+        command = COMMAND::SEND_MESSAGE_REQUEST;
     }
 
     QStringList splitWords;
@@ -98,6 +101,14 @@ void Server::getRequest()
             splitWords = requestSeparation(clientSocket->readAll());
             qDebug() << "GET_MESSAGE_LIST_REQUEST: " << splitWords;
             handleMessageListRequest(clientSocket, splitWords[0], splitWords[1]);
+            break;
+        }
+
+        case COMMAND::SEND_MESSAGE_REQUEST:
+        {
+            splitWords = requestSeparation(clientSocket->readAll());
+            qDebug() << "SEND_MESSAGE_REQUEST: " << splitWords;
+            handleSendMessageRequest(clientSocket, splitWords[0], splitWords[1], splitWords[2]);
             break;
         }
     }
@@ -185,6 +196,20 @@ void Server::handleMessageListRequest(QTcpSocket *clientSocket, QString firstUse
     // TODO: solve problem if message containts separator " /s "
     sqlitedb->getMessageList(messageList, firstUser, secondUser);
     sendMessageListResponse(clientSocket, messageList);
+}
+
+void Server::sendSendMessageResponse(QTcpSocket *clientSocket, QString message, QString timestamp)
+{
+    QString response = "MSSG";
+    response.append(message + " /s " + timestamp);
+    clientSocket->write(response.toUtf8());
+}
+
+void Server::handleSendMessageRequest(QTcpSocket *clientSocket, QString firstUser, QString secondUser,
+                                      QString message)
+{
+    sqlitedb->sendMessage(firstUser, secondUser, message, getConnectionTimeStamp());
+    sendSendMessageResponse(clientSocket, "SCSS", getConnectionTimeStamp());
 }
 
 QString Server::getConnectionTimeStamp()

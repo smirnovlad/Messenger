@@ -20,6 +20,7 @@ set(PROJECT_SOURCES
         user.cpp
         userlist.cpp
         chat.cpp
+        message.cpp
         clientsocket.cpp
         clientui.cpp
         client.cpp
@@ -33,6 +34,7 @@ set(PROJECT_HEADERS
         user.h
         userlist.h
         chat.h
+        message.h
         clientsocket.h
         clientui.h
 )
@@ -44,6 +46,7 @@ set(PROJECT_UI
     user.ui
     userlist.ui
     chat.ui
+    message.ui
     clientui.ui
 )
 
