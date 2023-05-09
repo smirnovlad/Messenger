@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QLayoutItem>
+#include <QListWidget>
 
 #include "client.h"
 #include "authorization.h"
@@ -35,10 +36,14 @@ public:
     void handleRegistration(QString result);
     void handleAuthorization(QString result);
     void handleContactList(const QList< QPair<QString, QString> >& result);
+    void handleChat(QList<QString>& fromUser, QList<QString>& toUser,
+                    QList<QString>& text, QList<QString>& timestamp);
 
 private slots:
     void setRegistrationWidget();
     void setAuthorizationWidget();
     void setUserListWidget();
+    void setChatWidget();
+    void sendChatRequest(QListWidgetItem* contact);
 };
 #endif // CLIENTUI_H

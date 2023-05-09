@@ -20,13 +20,10 @@ public:
 public:
     ClientSocket *clientSocket;
     ClientUI *clientUI;
-    quint32 nextBlockSize;
-
-// private slots:
 
 public:
-    int sendMessage();
-    int logIn(QString login, QString password);
+    QString userLogin;
+
 };
 
 #endif // CLIENT_H

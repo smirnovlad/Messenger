@@ -35,19 +35,22 @@ void ClientSocket::getResponse()
     enum class COMMAND { NONE,
                          REGISTRATION_RESPONSE,
                          AUTHORIZATION_RESPONSE,
-                         CONTACT_LIST_RESPONSE
+                         CONTACT_LIST_RESPONSE,
+                         MESSAGE_LIST_RESPONSE
                        };
-    COMMAND cmd = COMMAND::NONE;
+    COMMAND command = COMMAND::NONE;
 
     if (packetType == "REGI") {
-        cmd = COMMAND::REGISTRATION_RESPONSE;
+        command = COMMAND::REGISTRATION_RESPONSE;
     } else if (packetType == "AUTH") {
-        cmd = COMMAND::AUTHORIZATION_RESPONSE;
+        command = COMMAND::AUTHORIZATION_RESPONSE;
     } else if (packetType == "CTCS") {
-        cmd = COMMAND::CONTACT_LIST_RESPONSE;
+        command = COMMAND::CONTACT_LIST_RESPONSE;
+    } else if (packetType == "CHAT") {
+        command = COMMAND::MESSAGE_LIST_RESPONSE;
     }
 
-    switch (cmd)
+    switch (command)
     {
         case COMMAND::REGISTRATION_RESPONSE:
         {
@@ -73,6 +76,21 @@ void ClientSocket::getResponse()
             client->clientUI->handleContactList(result);
             break;
         }
+
+        case COMMAND::MESSAGE_LIST_RESPONSE:
+        {
+            QList<QString> fromUser, toUser, text, timestamp;
+            QStringList tuples = requestSeparation(message, " /n ");
+            for (QString& tupleString: tuples) {
+                QStringList tuple = requestSeparation(tupleString, " /s ");
+                fromUser.push_back(tuple[0]);
+                toUser.push_back(tuple[1]);
+                text.push_back(tuple[2]);
+                timestamp.push_back(tuple[3]);
+            }
+            client->clientUI->handleChat(fromUser, toUser, text, timestamp);
+            break;
+        }
     }
 }
 
@@ -80,6 +98,7 @@ void ClientSocket::sendSignUpRequest(QString login, QString password)
 {
     qDebug() << "Sign Up requested. Login: " << login << ", password: " << password;
     QString request = "REGI";
+    client->userLogin = login; // TODO: send back with response from server and do it after
     request.append(QString("%1 /s %2").arg(login).arg(password));
     tcpSocket->write(request.toUtf8());
 }
@@ -88,6 +107,7 @@ void ClientSocket::sendLogInRequest(QString login, QString password)
 {
     qDebug() << "Log in requested. Login: " << login << ", password: " << password;
     QString request = "AUTH";
+    client->userLogin = login; // TODO: send back with response from server and do it after
     request.append(QString("%1 /s %2").arg(login).arg(password));
     tcpSocket->write(request.toUtf8());
 }
@@ -97,5 +117,14 @@ void ClientSocket::sendContactListRequest(QString login, QString password)
     qDebug() << "Contact list requested. Login: " << login << ", password: " << password;
     QString request = "CTCS";
     request.append(QString("%1 /s %2").arg(login).arg(password));
+    tcpSocket->write(request.toUtf8());
+}
+
+void ClientSocket::sendChatRequest(QString firstUser, QString secondUser)
+{
+    qDebug() << "Chat requested. First user: " << firstUser <<
+                ", second user: " << secondUser;
+    QString request = "CHAT";
+    request.append(QString("%1 /s %2").arg(firstUser).arg(secondUser));
     tcpSocket->write(request.toUtf8());
 }

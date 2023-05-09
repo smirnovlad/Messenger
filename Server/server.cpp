@@ -47,7 +47,8 @@ void Server::getRequest()
     enum class COMMAND { NONE,
                          REGISTRATION_REQUEST,
                          AUTHORIZATION_REQUEST,
-                         CONTACT_LIST_REQUEST
+                         CONTACT_LIST_REQUEST,
+                         MESSAGE_LIST_REQUEST
                        };
     COMMAND command = COMMAND::NONE;
 
@@ -59,6 +60,8 @@ void Server::getRequest()
         command = COMMAND::AUTHORIZATION_REQUEST;
     } else if (packetType == "CTCS") {
         command = COMMAND::CONTACT_LIST_REQUEST;
+    } else if (packetType == "CHAT") {
+        command = COMMAND::MESSAGE_LIST_REQUEST;
     }
 
     QStringList splitWords;
@@ -87,6 +90,14 @@ void Server::getRequest()
             qDebug() << "GET_CONTACT_LIST_REQUEST: " << splitWords;
             // TODO: separate authorization method???
             handleContactListRequest(clientSocket, splitWords[0], splitWords[1]);
+            break;
+        }
+
+        case COMMAND::MESSAGE_LIST_REQUEST:
+        {
+            splitWords = requestSeparation(clientSocket->readAll());
+            qDebug() << "GET_MESSAGE_LIST_REQUEST: " << splitWords;
+            handleMessageListRequest(clientSocket, splitWords[0], splitWords[1]);
             break;
         }
     }
@@ -148,7 +159,7 @@ void Server::sendContactListResponse(QTcpSocket *clientSocket, QString& contactL
 {
     QString response = "CTCS";
     response.append(contactList);
-    qDebug() << "contact list: " << contactList;
+    qDebug() << "Contact list: " << contactList;
     clientSocket->write(response.toUtf8());
 }
 
@@ -158,6 +169,22 @@ void Server::handleContactListRequest(QTcpSocket *clientSocket, QString &login, 
     QString contactList;
     sqlitedb->getContactList(contactList);
     sendContactListResponse(clientSocket, contactList);
+}
+
+void Server::sendMessageListResponse(QTcpSocket *clientSocket, QString &messageList)
+{
+    QString response = "CHAT";
+    response.append(messageList);
+    qDebug() << "Message list: " << messageList;
+    clientSocket->write(response.toUtf8());
+}
+
+void Server::handleMessageListRequest(QTcpSocket *clientSocket, QString firstUser, QString secondUser)
+{
+    QString messageList;
+    // TODO: solve problem if message containts separator " /s "
+    sqlitedb->getMessageList(messageList, firstUser, secondUser);
+    sendMessageListResponse(clientSocket, messageList);
 }
 
 QString Server::getConnectionTimeStamp()

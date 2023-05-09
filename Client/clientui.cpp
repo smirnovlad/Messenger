@@ -6,6 +6,10 @@
 #include "./ui_registration.h"
 #include "userlist.h"
 #include "./ui_userlist.h"
+#include "user.h"
+#include "./ui_user.h"
+#include "chat.h"
+#include "./ui_chat.h"
 
 #include <QDebug>
 #include <QMessageBox>
@@ -72,14 +76,32 @@ void ClientUI::setUserListWidget()
     this->clearLayout();
     UserList *contactListWidget = new UserList(this);
 
-    connect(contactListWidget->ui->backButton, SIGNAL(clicked()), this,
+    connect(contactListWidget->ui->logoutButton, SIGNAL(clicked()), this,
             SLOT(setAuthorizationWidget()));
+    connect(contactListWidget->ui->userList, SIGNAL(itemClicked(QListWidgetItem*)), this,
+            SLOT(sendChatRequest(QListWidgetItem*)));
 
     ui->contentWidget->layout()->addWidget(contactListWidget);
+    this->client->clientSocket->sendContactListRequest("", "");
+}
+
+void ClientUI::setChatWidget()
+{
+    qDebug() << "Switched to chat";
+    this->clearLayout();
+    Chat *chatWidget = new Chat(this);
+
+    connect(chatWidget->ui->backButton, SIGNAL(clicked()), this,
+            SLOT(setUserListWidget()));
+
+    ui->contentWidget->layout()->addWidget(chatWidget);
 }
 
 void ClientUI::handleRegistration(QString result)
 {
+    if (result != "SCSS") {
+        client->userLogin = "";
+    }
     if (result == "ILEN") {
         QMessageBox::warning(this, "Registration failed", "Login and password length must be at least 4");
     } else if (result == "ALRD") {
@@ -92,6 +114,9 @@ void ClientUI::handleRegistration(QString result)
 
 void ClientUI::handleAuthorization(QString result)
 {
+    if (result != "SCSS") {
+        client->userLogin = "";
+    }
     if (result == "ILEN") {
         QMessageBox::warning(this, "Authorization failed", "Login and password length must be at least 4");
     } else if (result == "NFND" || result == "IPSW") {
@@ -99,7 +124,6 @@ void ClientUI::handleAuthorization(QString result)
     } else if (result == "SCSS") {
         QMessageBox::information(this, "Authorization success", "You are loged in");
         this->setUserListWidget();
-        this->client->clientSocket->sendContactListRequest("", "");
     }
 }
 
@@ -108,4 +132,25 @@ void ClientUI::handleContactList(const QList< QPair<QString, QString> >& result)
     QLayoutItem *activeItem = getActiveItem();
     qDebug() << "count: " << ui->contentWidget->layout()->count();
     static_cast<UserList*>(activeItem->widget())->setContactList(result);
+}
+
+void ClientUI::handleChat(QList<QString> &fromUser, QList<QString> &toUser,
+                          QList<QString> &text, QList<QString> &timestamp)
+{
+    QLayoutItem *activeItem = getActiveItem();
+    // qDebug() << "count: " << ui->contentWidget->layout()->count();
+    static_cast<Chat*>(activeItem->widget())->setMessageList(fromUser, toUser, text, timestamp);
+}
+
+void ClientUI::sendChatRequest(QListWidgetItem* contact)
+{
+    qDebug() << "Chat requested";
+    QLayoutItem *activeItem = getActiveItem();
+    QListWidget *userListWidget = static_cast<UserList*>(activeItem->widget())->ui->userList;
+    User *userWidget = static_cast<User*>(userListWidget->itemWidget(contact));
+    // qDebug() << "id: " << userWidget->ui->IDLabel->text();
+    QString secondUser = userWidget->ui->loginLabel->text();
+    qDebug() << "secondUser: " << secondUser;
+    this->setChatWidget();
+    // client->clientSocket->sendChatRequest(client->userLogin, secondUser);
 }

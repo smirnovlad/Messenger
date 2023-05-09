@@ -15,16 +15,30 @@
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout">
    <item>
+    <widget class="QLabel" name="IDTextLabel">
+     <property name="text">
+      <string>ID:</string>
+     </property>
+    </widget>
+   </item>
+   <item>
     <widget class="QLabel" name="IDLabel">
      <property name="text">
-      <string>ID</string>
+      <string>&lt;ID&gt;</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="loginTextLabel">
+     <property name="text">
+      <string>Login:</string>
      </property>
     </widget>
    </item>
    <item>
     <widget class="QLabel" name="loginLabel">
      <property name="text">
-      <string>Login</string>
+      <string>&lt;Login&gt;</string>
      </property>
     </widget>
    </item>

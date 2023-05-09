@@ -40,6 +40,9 @@ private:
     void handleContactListRequest(QTcpSocket *clientSocket, QString &login, QString &password);
     void sendContactListResponse(QTcpSocket *clientSocket, QString& contactList);
 
+    void handleMessageListRequest(QTcpSocket *clientSocket, QString firstUser, QString secondUser);
+    void sendMessageListResponse(QTcpSocket *clientSocket, QString& messageList);
+
 private slots:
     void handleConnectionRequest();
     void getRequest();

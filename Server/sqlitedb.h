@@ -16,12 +16,14 @@ public:
 
 private:
     QSqlDatabase DB;
+    QString getLoginByID(int32_t id);
 
 public:
     int32_t findUser(QString login);
     bool checkPassword(int32_t id, QString password);
     int32_t addUser(QString login, QString password);
     void getContactList(QString& contactList);
+    void getMessageList(QString& messageList, QString firstUser, QString secondUser);
 };
 
 #endif // SQLITEDB_H

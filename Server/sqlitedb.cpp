@@ -29,17 +29,29 @@ SQLiteDB::~SQLiteDB()
     DB.close();
 }
 
+QString SQLiteDB::getLoginByID(int32_t id)
+{
+    QSqlQuery query(DB);
+    if(query.exec("SELECT login FROM Users WHERE id=" + QString::number(id))) {
+        if (query.next()) {
+            return query.value(0).toString();
+        }
+    } else {
+        qDebug() << "Bad query";
+    }
+    return "";
+}
+
 int32_t SQLiteDB::findUser(QString login) {
     QSqlQuery query(DB);
     if(query.exec("SELECT id FROM Users WHERE login='" + login + "'")) {
         if (query.next()) {
             return query.value(0).toInt();
-        } else {
-            return -1;
         }
     } else {
         qDebug() << "Bad query";
     }
+    return -1;
 }
 
 bool SQLiteDB::checkPassword(int32_t id, QString password)
@@ -51,12 +63,11 @@ bool SQLiteDB::checkPassword(int32_t id, QString password)
             qDebug() << "pass in DB: " << query.value(0).toString();
             qDebug() << "arg pass: " << password;
             return password == query.value(0).toString();
-        } else {
-            return false;
         }
     } else {
         qDebug() << "Bad query";
     }
+    return false;
 }
 
 
@@ -85,5 +96,30 @@ void SQLiteDB::getContactList(QString& contactList)
             }
             contactList.append(query.value(0).toString() + " /s " + query.value(1).toString());
         }
+        return;
     }
+    qDebug() << "Bad query";
+}
+
+void SQLiteDB::getMessageList(QString &messageList, QString firstUser, QString secondUser)
+{
+    QSqlQuery query(DB);
+    QString chatName = "Chat_" + firstUser + "_" + secondUser;
+    if (query.exec("CREATE TABLE IF NOT EXISTS " + chatName +
+                   " (id INTEGER PRIMARY KEY, fromID INTEGER NOT NULL, toID INTEGER NOT NULL, "
+                   "message TEXT NOT NULL, timestamp TEXT NOT NULL")) {
+        if (query.exec("SELECT * FROM " + chatName)) {
+            while (query.next()) {
+                if (messageList.length()) {
+                    messageList.append(" /n ");
+                }
+                messageList.append(getLoginByID(query.value(1).toInt()) + " /s " +
+                                   getLoginByID(query.value(2).toInt()) + " /s " +
+                                   query.value(3).toString() + " /s " +
+                                   query.value(4).toString());
+            }
+            return;
+        }
+    }
+    qDebug() << "Bad query";
 }

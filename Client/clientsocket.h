@@ -27,6 +27,7 @@ public slots:
     void sendSignUpRequest(QString login, QString password);
     void sendLogInRequest(QString login, QString password);
     void sendContactListRequest(QString login, QString password);
+    void sendChatRequest(QString firstUser, QString secondUser);
 
 signals:
 

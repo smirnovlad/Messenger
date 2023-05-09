@@ -34,9 +34,9 @@
     <widget class="QListWidget" name="userList"/>
    </item>
    <item>
-    <widget class="QPushButton" name="backButton">
+    <widget class="QPushButton" name="logoutButton">
      <property name="text">
-      <string>Back</string>
+      <string>Log out</string>
      </property>
     </widget>
    </item>

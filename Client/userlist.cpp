@@ -21,8 +21,8 @@ void UserList::setContactList(QList<QPair<QString, QString>> contactList)
 {
     for (auto& contact: contactList) {
         User* userWidget = new User(this);
-        userWidget->ui->IDLabel->setText("ID: " + contact.first);
-        userWidget->ui->loginLabel->setText("Login: " + contact.second);
+        userWidget->ui->IDLabel->setText(contact.first);
+        userWidget->ui->loginLabel->setText(contact.second);
 
         // qDebug() << "info: " << userWidget->ui->userID->text() << userWidget->ui->userLogin->text();
 
