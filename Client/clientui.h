@@ -38,7 +38,7 @@ public:
     void handleContactList(const QList< QPair<QString, QString> >& result);
     void handleChat(QList<QString>& fromUser, QList<QString>& toUser,
                     QList<QString>& text, QList<QString>& timestamp);
-    void handleSendMessage(QPair<QString, QString> result);
+    void handleSendMessage(QStringList result);
 
 private slots:
     void setRegistrationWidget();

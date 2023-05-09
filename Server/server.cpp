@@ -1,4 +1,5 @@
 #include "server.h"
+
 #include <QDir>
 
 Server::Server(QObject *parent)
@@ -17,15 +18,24 @@ Server::Server(QObject *parent)
 
 void Server::handleConnectionRequest()
 {
-    User *newUser = new User;
-    newUser->setSocket(tcpServer->nextPendingConnection());
-    QTcpSocket *newSocket = newUser->getSocket();
+    QTcpSocket *newSocket = tcpServer->nextPendingConnection();
 
-    connect(newSocket, SIGNAL(disconnected()), this, SLOT(onDisconnect()));
+//    qDebug() << "newSocket: " << newSocket;
+
+    connect(newSocket, SIGNAL(disconnected()), this, SLOT(handleDisconnection()));
     connect(newSocket, SIGNAL(readyRead()), this, SLOT(getRequest()));
-    userConnections.append(newUser);
 
     qDebug() << "New connection: " << newSocket->socketDescriptor();
+}
+
+void Server::handleDisconnection()
+{
+    qDebug() << "Disconnect socket";
+
+    QTcpSocket *clientSocket = static_cast<QTcpSocket *>(QObject::sender());
+    uint32_t id = socketToUserID[clientSocket];
+    socketToUserID.remove(clientSocket);
+    userIDToSocket.remove(id);
 }
 
 QStringList Server::requestSeparation(QString text)
@@ -38,8 +48,6 @@ QStringList Server::requestSeparation(QString text)
 
 void Server::getRequest()
 {
-    QString time;
-
     QTcpSocket *clientSocket = static_cast<QTcpSocket *>(QObject::sender());
 
     QString packetType = clientSocket->read(4);
@@ -53,7 +61,7 @@ void Server::getRequest()
                        };
     COMMAND command = COMMAND::NONE;
 
-    qDebug() << "packetType: " << packetType;
+    qDebug() << "Packet type: " << packetType;
 
     if (packetType == "REGI") {
         command = COMMAND::REGISTRATION_REQUEST;
@@ -150,18 +158,19 @@ void Server::handleAuthorizationRequest(QTcpSocket *clientSocket, QString &login
     qDebug() << "Checking data to log in...";
     qDebug() << "login: " << login << ", password: " << password;
 
-    // TODO: check in DB
     if(login.length() < 4 || password.length() < 4) {
         sendAuthorizationResponse(clientSocket, "ILEN");
     } else {
         int32_t id = sqlitedb->findUser(login);
-        qDebug() << "id = " << id;
+        qDebug() << "User ID in DB: " << id;
         if (id == -1){
             sendAuthorizationResponse(clientSocket, "NFND"); // not found
         } else if (!sqlitedb->checkPassword(id, password)) {
             sendAuthorizationResponse(clientSocket, "IPSW"); // incorrect password
         } else {
             sendAuthorizationResponse(clientSocket, "SCSS");
+            userIDToSocket[id] = clientSocket;
+            socketToUserID[clientSocket] = id;
         }
     }
 }
@@ -193,23 +202,32 @@ void Server::sendMessageListResponse(QTcpSocket *clientSocket, QString &messageL
 void Server::handleMessageListRequest(QTcpSocket *clientSocket, QString firstUser, QString secondUser)
 {
     QString messageList;
-    // TODO: solve problem if message containts separator " /s "
+    // TODO: solve problem if message contains separator " /s "
     sqlitedb->getMessageList(messageList, firstUser, secondUser);
     sendMessageListResponse(clientSocket, messageList);
 }
 
-void Server::sendSendMessageResponse(QTcpSocket *clientSocket, QString message, QString timestamp)
+void Server::sendSendMessageResponse(QTcpSocket *clientSocket, QString result, QString message,
+                                     QString sender, QString receiver, QString timestamp)
 {
     QString response = "MSSG";
-    response.append(message + " /s " + timestamp);
+    response.append(result + " /s " + message + " /s " + sender + " /s " +
+                    receiver + " /s " + timestamp);
     clientSocket->write(response.toUtf8());
 }
 
-void Server::handleSendMessageRequest(QTcpSocket *clientSocket, QString firstUser, QString secondUser,
-                                      QString message)
+void Server::handleSendMessageRequest(QTcpSocket *clientSocket, QString sender,
+                                      QString receiver, QString message)
 {
-    sqlitedb->sendMessage(firstUser, secondUser, message, getConnectionTimeStamp());
-    sendSendMessageResponse(clientSocket, "SCSS", getConnectionTimeStamp());
+    QString timestamp = getConnectionTimeStamp();
+    sqlitedb->sendMessage(sender, receiver, message, timestamp);
+    sendSendMessageResponse(clientSocket, "SCSS", message, sender,
+                            receiver, timestamp);
+    uint32_t secondUserID = sqlitedb->findUser(receiver);
+    if (userIDToSocket.find(secondUserID) != userIDToSocket.end()) {
+        sendSendMessageResponse(userIDToSocket[secondUserID], "SCSS", message, sender,
+                                receiver, timestamp);
+    }
 }
 
 QString Server::getConnectionTimeStamp()

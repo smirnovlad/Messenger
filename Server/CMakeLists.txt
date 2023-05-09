@@ -19,13 +19,11 @@ set(PROJECT_SOURCES
         main.cpp
         server.cpp
         sqlitedb.cpp
-        user.cpp
 )
 
 set(PROJECT_HEADERS
         server.h
         sqlitedb.h
-        user.h
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)

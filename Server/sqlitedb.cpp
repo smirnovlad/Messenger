@@ -57,11 +57,8 @@ int32_t SQLiteDB::findUser(QString login) {
 bool SQLiteDB::checkPassword(int32_t id, QString password)
 {
     QSqlQuery query(DB);
-    qDebug() << "string id = " << QString::number(id);
     if(query.exec("SELECT password FROM Users WHERE id=" + QString::number(id))) {
         if (query.next()) {
-            qDebug() << "pass in DB: " << query.value(0).toString();
-            qDebug() << "arg pass: " << password;
             return password == query.value(0).toString();
         }
     } else {

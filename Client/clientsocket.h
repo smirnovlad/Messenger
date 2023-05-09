@@ -16,6 +16,8 @@ public:
 
 private:
     Client *client;
+
+public:
     QTcpSocket *tcpSocket;
 
     QStringList requestSeparation(QString text, QString sep);

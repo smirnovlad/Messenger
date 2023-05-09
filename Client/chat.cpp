@@ -29,7 +29,7 @@ void Chat::setMessageList(QList<QString> &fromUser, QList<QString> &toUser,
             messageWidget->ui->messageFromLabel->setText(text[i]);
             messageWidget->ui->timestampFromLabel->setText(timestamp[i]);
             messageWidget->ui->messageToLabel->setText("");
-            messageWidget->ui->timestampFromLabel->setText("");
+            messageWidget->ui->timestampToLabel->setText("");
         } else {
             messageWidget->ui->messageToLabel->setText(text[i]);
             messageWidget->ui->timestampToLabel->setText(timestamp[i]);
@@ -53,7 +53,7 @@ void Chat::sendMessage()
     }
 }
 
-void Chat::addMessage(QString timestamp)
+void Chat::sendMessage(QString timestamp)
 {
     Message* messageWidget = new Message(this);
 
@@ -69,4 +69,19 @@ void Chat::addMessage(QString timestamp)
     ui->messageList->setItemWidget(item, messageWidget);
 
     ui->lineEdit->setText("");
+}
+
+void Chat::receiveMessage(QString message, QString timestamp)
+{
+    Message* messageWidget = new Message(this);
+
+    messageWidget->ui->messageFromLabel->setText("");
+    messageWidget->ui->messageToLabel->setText(message);
+    messageWidget->ui->timestampFromLabel->setText("");
+    messageWidget->ui->timestampToLabel->setText(timestamp);
+
+    QListWidgetItem *item = new QListWidgetItem(ui->messageList);
+    item->setSizeHint(messageWidget->sizeHint());
+    ui->messageList->addItem(item);
+    ui->messageList->setItemWidget(item, messageWidget);
 }

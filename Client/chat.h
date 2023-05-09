@@ -22,7 +22,8 @@ public:
     void setMessageList(QList<QString> &fromUser, QList<QString> &toUser,
                         QList<QString> &text, QList<QString> &timestamp,
                         QString userName);
-    void addMessage(QString timestamp);
+    void sendMessage(QString timestamp);
+    void receiveMessage(QString message, QString timestamp);
 
 private slots:
     void sendMessage();

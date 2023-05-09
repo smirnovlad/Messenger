@@ -5,6 +5,8 @@ ClientSocket::ClientSocket(QObject *parent, Client* client)
     , client(client)
     , tcpSocket(new QTcpSocket(this))
 {
+//    qDebug() << "tcpSocket: " << tcpSocket;
+
     QString hostname = "127.0.0.1";
     quint32 port = 55155;
     tcpSocket->abort();
@@ -72,7 +74,6 @@ void ClientSocket::getResponse()
             QList< QPair<QString, QString> > result;
             QStringList pairs = requestSeparation(message, " /n ");
             for (QString& pairString: pairs) {
-                // qDebug() << "pairString: " << pairString;
                 QStringList pair = requestSeparation(pairString, " /s ");
                 result.push_back({pair[0], pair[1]});
             }
@@ -100,9 +101,9 @@ void ClientSocket::getResponse()
 
         case COMMAND::SEND_MESSAGE_RESPONSE:
         {
+            qDebug() << "Send message response: " << message;
             QStringList splitWords = requestSeparation(message, " /s ");
-            QPair<QString, QString> result = {splitWords[0], splitWords[1]};
-            client->clientUI->handleSendMessage(result);
+            client->clientUI->handleSendMessage(splitWords);
             break;
         }
     }
@@ -141,6 +142,7 @@ void ClientSocket::sendChatRequest(QString secondUser)
     QString request = "CHAT";
     request.append(QString("%1 /s %2").arg(client->userLogin).arg(secondUser));
     tcpSocket->write(request.toUtf8());
+    qDebug() << "Written in socket";
 }
 
 void ClientSocket::sendSendMessageRequest(QString secondUser, QString message)

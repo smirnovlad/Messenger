@@ -44,6 +44,7 @@ QLayoutItem* ClientUI::getActiveItem() {
 
 void ClientUI::setAuthorizationWidget()
 {
+    // emit this->client->clientSocket->tcpSocket->disconnected();
     qDebug() << "Switched to log in";
     this->clearLayout();
     Authorization *authorizationWidget = new Authorization(this);
@@ -82,7 +83,7 @@ void ClientUI::setUserListWidget()
             SLOT(sendChatRequest(QListWidgetItem*)));
 
     ui->contentWidget->layout()->addWidget(contactListWidget);
-    this->client->clientSocket->sendContactListRequest("", "");
+    this->client->clientSocket->sendContactListRequest("", ""); // TODO
 }
 
 void ClientUI::setChatWidget(QString name)
@@ -133,7 +134,6 @@ void ClientUI::handleAuthorization(QString result)
 void ClientUI::handleContactList(const QList< QPair<QString, QString> >& result)
 {
     QLayoutItem *activeItem = getActiveItem();
-    qDebug() << "count: " << ui->contentWidget->layout()->count();
     static_cast<UserList*>(activeItem->widget())->setContactList(result);
 }
 
@@ -141,7 +141,6 @@ void ClientUI::handleChat(QList<QString> &fromUser, QList<QString> &toUser,
                           QList<QString> &text, QList<QString> &timestamp)
 {
     QLayoutItem *activeItem = getActiveItem();
-    // qDebug() << "count: " << ui->contentWidget->layout()->count();
     static_cast<Chat*>(activeItem->widget())->setMessageList(fromUser, toUser, text, timestamp, client->userLogin);
 }
 
@@ -158,13 +157,29 @@ void ClientUI::sendChatRequest(QListWidgetItem* contact)
     client->clientSocket->sendChatRequest(secondUser);
 }
 
-void ClientUI::handleSendMessage(QPair<QString, QString> result)
+void ClientUI::handleSendMessage(QStringList result)
 {
-    if (result.first == "SCSS") {
+    QString sender = result[2];
+    if (result[0] == "SCSS") {
+        QString message = result[1];
+        QString timestamp = result[4];
         QLayoutItem *activeItem = getActiveItem();
-        static_cast<Chat*>(activeItem->widget())->addMessage(result.second);
-        QMessageBox::information(this, "Sending success", "Message was sent");
+        if (sender == client->userLogin) {
+            Chat* chatWidget = static_cast<Chat*>(activeItem->widget());
+            chatWidget->sendMessage(timestamp);
+            // QMessageBox::information(this, "Sending success", "Message was sent");
+        } else {
+            Chat* chatWidget = dynamic_cast<Chat*>(activeItem->widget());
+            if (chatWidget != nullptr) {
+                chatWidget->receiveMessage(message, timestamp);
+                // QMessageBox::information(this, "Receiving success", "Message was received");
+            }
+        }
     } else {
-        QMessageBox::warning(this, "Sending failed", "Message was not sent");
+        if (sender == client->userLogin) {
+            QMessageBox::warning(this, "Sending failed", "Message was not sent");
+        } else {
+            QMessageBox::warning(this, "Receiving failed", "Message was not received");
+        }
     }
 }

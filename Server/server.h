@@ -24,7 +24,8 @@ public:
 private:
     SQLiteDB *sqlitedb;
     QTcpServer *tcpServer;
-    QList<User*> userConnections;
+    QMap<uint32_t, QTcpSocket*> userIDToSocket;
+    QMap<QTcpSocket*, uint32_t> socketToUserID;
 
     quint32 nextBlockSize;
 
@@ -43,12 +44,14 @@ private:
     void handleMessageListRequest(QTcpSocket *clientSocket, QString firstUser, QString secondUser);
     void sendMessageListResponse(QTcpSocket *clientSocket, QString& messageList);
 
-    void handleSendMessageRequest(QTcpSocket *clientSocket, QString firstUser, QString secondUser,
+    void handleSendMessageRequest(QTcpSocket *clientSocket, QString sender, QString receiver,
                                   QString message);
-    void sendSendMessageResponse(QTcpSocket *clientSocket, QString message, QString timestamp);
+    void sendSendMessageResponse(QTcpSocket *clientSocket, QString result, QString message,
+                                 QString firstUser, QString secondUser, QString timestamp);
 
 private slots:
     void handleConnectionRequest();
+    void handleDisconnection();
     void getRequest();
 
     QStringList requestSeparation(QString text);
