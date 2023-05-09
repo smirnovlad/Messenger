@@ -25,6 +25,8 @@ public:
     void getContactList(QString& contactList);
     void getMessageList(QString& messageList, QString firstUser, QString secondUser);
     void sendMessage(QString firstUser, QString secondUser, QString message, QString timestamp);
+
+    void updateToken(int32_t userId, QString token, QString timestamp);
 };
 
 #endif // SQLITEDB_H

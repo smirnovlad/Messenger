@@ -163,12 +163,14 @@ void Server::handleAuthorizationRequest(QTcpSocket *clientSocket, QString &login
     } else {
         int32_t id = sqlitedb->findUser(login);
         qDebug() << "User ID in DB: " << id;
-        if (id == -1){
+        if (id == -1) {
             sendAuthorizationResponse(clientSocket, "NFND"); // not found
         } else if (!sqlitedb->checkPassword(id, password)) {
             sendAuthorizationResponse(clientSocket, "IPSW"); // incorrect password
         } else {
-            sendAuthorizationResponse(clientSocket, "SCSS");
+            QString token = generateToken();
+            sqlitedb->updateToken(id, token, getConnectionTimeStamp());
+            sendAuthorizationResponse(clientSocket, "SCSS /s " + token);
             userIDToSocket[id] = clientSocket;
             socketToUserID[clientSocket] = id;
         }
@@ -234,6 +236,21 @@ QString Server::getConnectionTimeStamp()
 {
     QString time = QDateTime::currentDateTime().toString();
     return "[" + time + "]";
+}
+
+QString Server::generateToken()
+{
+    const QString possibleCharacters("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789");
+    const uint32_t randomStringLength = 32;
+
+    QString token;
+    for(uint32_t i = 0; i < randomStringLength; ++i)
+    {
+        uint32_t index = qrand() % possibleCharacters.length();
+        QChar nextChar = possibleCharacters.at(index);
+        token.append(nextChar);
+    }
+    return token;
 }
 
 Server::~Server()

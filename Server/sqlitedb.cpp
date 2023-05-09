@@ -152,3 +152,25 @@ void SQLiteDB::sendMessage(QString firstUser, QString secondUser, QString messag
         qDebug() << "Bad query while creating chat table for second user.";
     }
 }
+
+void SQLiteDB::updateToken(int32_t userId, QString token, QString timestamp)
+{
+    // query.prepare("UPDATE Users SET OnlineStatus='Online' WHERE UserName='" + user_name + "'");
+    QSqlQuery query(DB);
+    if (query.exec("SELECT id, login FROM Tokens WHERE id=" + QString::number(userId))) {
+        if (query.next()) {
+            query.exec("UPDATE Tokens SET token=" + token +
+                       " WHERE id=" + QString::number(userId));
+            query.exec("UPDATE Tokens SET creationTimeStamp=" + timestamp +
+                       " WHERE id=" + QString::number(userId));
+        } else {
+            query.prepare("INSERT INTO Tokens (userId, token, creationTimeStamp) "
+                        "VALUES (:userId, :token, )");
+            query.bindValue(":userId", userId);
+            query.bindValue(":token", token);
+            query.bindValue(":creationTimeStamp", timestamp);
+            query.exec();
+        }
+        return;
+    }
+}

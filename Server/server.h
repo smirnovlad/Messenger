@@ -30,6 +30,7 @@ private:
     quint32 nextBlockSize;
 
     QString getConnectionTimeStamp();
+    QString generateToken();
 
 private:
     void handleRegistrationRequest(QTcpSocket *clientSocket, QString &login, QString &password);

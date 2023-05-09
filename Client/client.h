@@ -17,6 +17,9 @@ class Client : public QObject
 public:
     explicit Client(QObject *parent = nullptr);
 
+    void saveToken(QString token);
+    QString getToken();
+
 public:
     ClientSocket *clientSocket;
     ClientUI *clientUI;

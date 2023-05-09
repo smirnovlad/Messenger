@@ -34,7 +34,7 @@ private:
 
 public:
     void handleRegistration(QString result);
-    void handleAuthorization(QString result);
+    void handleAuthorization(QStringList result);
     void handleContactList(const QList< QPair<QString, QString> >& result);
     void handleChat(QList<QString>& fromUser, QList<QString>& toUser,
                     QList<QString>& text, QList<QString>& timestamp);

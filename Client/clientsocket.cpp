@@ -65,7 +65,8 @@ void ClientSocket::getResponse()
 
         case COMMAND::AUTHORIZATION_RESPONSE:
         {
-            client->clientUI->handleAuthorization(message);
+            QStringList result = requestSeparation(message, " /s ");
+            client->clientUI->handleAuthorization(result);
             break;
         }
 
