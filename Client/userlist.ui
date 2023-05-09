@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>424</width>
+    <height>340</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -31,21 +31,13 @@
     </widget>
    </item>
    <item>
-    <widget class="QScrollArea" name="userList">
-     <property name="widgetResizable">
-      <bool>true</bool>
+    <widget class="QListWidget" name="userList"/>
+   </item>
+   <item>
+    <widget class="QPushButton" name="backButton">
+     <property name="text">
+      <string>Back</string>
      </property>
-     <widget class="QWidget" name="scrollAreaWidgetContents">
-      <property name="geometry">
-       <rect>
-        <x>0</x>
-        <y>0</y>
-        <width>376</width>
-        <height>241</height>
-       </rect>
-      </property>
-      <layout class="QVBoxLayout" name="verticalLayout_2"/>
-     </widget>
     </widget>
    </item>
   </layout>
@@ -53,4 +45,3 @@
  <resources/>
  <connections/>
 </ui>
-

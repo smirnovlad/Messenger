@@ -18,8 +18,10 @@ public:
     explicit UserList(QWidget *parent = nullptr);
     ~UserList();
 
-private:
+public:
     Ui::UserList *ui;
+
+    void setContactList(QList< QPair<QString, QString> > contactList);
 };
 
 #endif // USERLIST_H

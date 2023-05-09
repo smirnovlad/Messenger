@@ -23,11 +23,5 @@ void Authorization::log_in()
 {
     QString login = ui->loginLabel->text();
     QString password = ui->passwordLabel->text();
-    // add: login and password don't contain symbols like space and others
-    // or move it to client log in method???
-    if (login.length() >= 4 && password.length() >= 4) {
-        emit logInRequest(login, password);
-    } else {
-
-    }
+    emit logInRequest(login, password);
 }

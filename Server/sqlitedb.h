@@ -17,8 +17,11 @@ public:
 private:
     QSqlDatabase DB;
 
-public slots:
-
+public:
+    int32_t findUser(QString login);
+    bool checkPassword(int32_t id, QString password);
+    int32_t addUser(QString login, QString password);
+    void getContactList(QString& contactList);
 };
 
 #endif // SQLITEDB_H

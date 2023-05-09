@@ -2,6 +2,7 @@
 #define CLIENTUI_H
 
 #include <QMainWindow>
+#include <QLayoutItem>
 
 #include "client.h"
 #include "authorization.h"
@@ -28,14 +29,16 @@ private:
 
 private:
     void clearLayout();
+    QLayoutItem* getActiveItem();
 
 public:
-    void handleRegistration(QString message);
+    void handleRegistration(QString result);
+    void handleAuthorization(QString result);
+    void handleContactList(const QList< QPair<QString, QString> >& result);
 
 private slots:
-    void log_in(QString login, QString password);
-//    void sign_up(QString login, QString password);
     void setRegistrationWidget();
     void setAuthorizationWidget();
+    void setUserListWidget();
 };
 #endif // CLIENTUI_H

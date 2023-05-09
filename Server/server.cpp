@@ -39,26 +39,54 @@ QStringList Server::requestSeparation(QString text)
 void Server::getRequest()
 {
     QString time;
-    QString typePacket;
-
-    QStringList splitWords;
 
     QTcpSocket *clientSocket = static_cast<QTcpSocket *>(QObject::sender());
 
-    typePacket = clientSocket->read(4);
+    QString packetType = clientSocket->read(4);
 
-    int command = 0;
+    enum class COMMAND { NONE,
+                         REGISTRATION_REQUEST,
+                         AUTHORIZATION_REQUEST,
+                         CONTACT_LIST_REQUEST
+                       };
+    COMMAND command = COMMAND::NONE;
 
-    if (typePacket == "REGI")
-            command = 5;
+    qDebug() << "packetType: " << packetType;
+
+    if (packetType == "REGI") {
+        command = COMMAND::REGISTRATION_REQUEST;
+    } else if (packetType == "AUTH") {
+        command = COMMAND::AUTHORIZATION_REQUEST;
+    } else if (packetType == "CTCS") {
+        command = COMMAND::CONTACT_LIST_REQUEST;
+    }
+
+    QStringList splitWords;
 
     switch (command)
     {
-        case 5:
+        case COMMAND::REGISTRATION_REQUEST:
         {
             splitWords = requestSeparation(clientSocket->readAll());
-            qDebug() << splitWords;
+            qDebug() << "REGISTRATION_REQUEST: " << splitWords;
             handleRegistrationRequest(clientSocket, splitWords[0], splitWords[1]);
+            break;
+        }
+
+        case COMMAND::AUTHORIZATION_REQUEST:
+        {
+            splitWords = requestSeparation(clientSocket->readAll());
+            qDebug() << "AUTHORIZATION_REQUEST: " << splitWords;
+            handleAuthorizationRequest(clientSocket, splitWords[0], splitWords[1]);
+            break;
+        }
+
+        case COMMAND::CONTACT_LIST_REQUEST:
+        {
+            splitWords = requestSeparation(clientSocket->readAll());
+            qDebug() << "GET_CONTACT_LIST_REQUEST: " << splitWords;
+            // TODO: separate authorization method???
+            handleContactListRequest(clientSocket, splitWords[0], splitWords[1]);
             break;
         }
     }
@@ -74,13 +102,62 @@ void Server::sendRegistrationResponse(QTcpSocket *clientSocket, QString message)
 void Server::handleRegistrationRequest(QTcpSocket *clientSocket, QString &login, QString &password)
 {
     qDebug() << "Checking data to sign up...";
-    qDebug() << "log: " << login << ", pass: " << password;
+    qDebug() << "login: " << login << ", password: " << password;
 
+    // add: login and password don't contain symbols like space and others
     if(login.length() < 4 || password.length() < 4) {
         sendRegistrationResponse(clientSocket, "ILEN");
+    } else if (sqlitedb->findUser(login) != -1){
+        sendRegistrationResponse(clientSocket, "ALRD");
     } else {
+        int32_t id = sqlitedb->addUser(login, password);
+        qDebug() << "new user id: " << id;
         sendRegistrationResponse(clientSocket, "SCSS");
     }
+}
+
+void Server::sendAuthorizationResponse(QTcpSocket *clientSocket, QString message)
+{
+    QString response = "AUTH";
+    response.append(message);
+    clientSocket->write(response.toUtf8());
+}
+
+void Server::handleAuthorizationRequest(QTcpSocket *clientSocket, QString &login, QString &password)
+{
+    qDebug() << "Checking data to log in...";
+    qDebug() << "login: " << login << ", password: " << password;
+
+    // TODO: check in DB
+    if(login.length() < 4 || password.length() < 4) {
+        sendAuthorizationResponse(clientSocket, "ILEN");
+    } else {
+        int32_t id = sqlitedb->findUser(login);
+        qDebug() << "id = " << id;
+        if (id == -1){
+            sendAuthorizationResponse(clientSocket, "NFND"); // not found
+        } else if (!sqlitedb->checkPassword(id, password)) {
+            sendAuthorizationResponse(clientSocket, "IPSW"); // incorrect password
+        } else {
+            sendAuthorizationResponse(clientSocket, "SCSS");
+        }
+    }
+}
+
+void Server::sendContactListResponse(QTcpSocket *clientSocket, QString& contactList)
+{
+    QString response = "CTCS";
+    response.append(contactList);
+    qDebug() << "contact list: " << contactList;
+    clientSocket->write(response.toUtf8());
+}
+
+void Server::handleContactListRequest(QTcpSocket *clientSocket, QString &login, QString &password)
+{
+    // TODO: separate authorization method???
+    QString contactList;
+    sqlitedb->getContactList(contactList);
+    sendContactListResponse(clientSocket, contactList);
 }
 
 QString Server::getConnectionTimeStamp()

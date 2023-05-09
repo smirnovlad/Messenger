@@ -17,6 +17,7 @@ find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Widgets Core Gui Sql Network REQUI
 set(PROJECT_SOURCES
         registration.cpp
         authorization.cpp
+        user.cpp
         userlist.cpp
         chat.cpp
         clientsocket.cpp
@@ -29,6 +30,7 @@ set(PROJECT_HEADERS
         client.h
         registration.h
         authorization.h
+        user.h
         userlist.h
         chat.h
         clientsocket.h
@@ -39,6 +41,7 @@ set(PROJECT_UI
     client.ui
     registration.ui
     authorization.ui
+    user.ui
     userlist.ui
     chat.ui
     clientui.ui

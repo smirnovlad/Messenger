@@ -8,7 +8,6 @@
 #include <QTimer>
 #include <QDateTime>
 #include <QList>
-#include <QFile>
 #include <QPair>
 
 #include "sqlitedb.h"
@@ -31,14 +30,20 @@ private:
 
     QString getConnectionTimeStamp();
 
-public:
+private:
+    void handleRegistrationRequest(QTcpSocket *clientSocket, QString &login, QString &password);
     void sendRegistrationResponse(QTcpSocket *clientSocket, QString message);
+
+    void handleAuthorizationRequest(QTcpSocket *clientSocket, QString &login, QString &password);
+    void sendAuthorizationResponse(QTcpSocket *clientSocket, QString message);
+
+    void handleContactListRequest(QTcpSocket *clientSocket, QString &login, QString &password);
+    void sendContactListResponse(QTcpSocket *clientSocket, QString& contactList);
 
 private slots:
     void handleConnectionRequest();
     void getRequest();
 
-    void handleRegistrationRequest(QTcpSocket *clientSocket, QString &login, QString &password);
     QStringList requestSeparation(QString text);
 };
 #endif // SERVER_H

@@ -18,11 +18,15 @@ private:
     Client *client;
     QTcpSocket *tcpSocket;
 
+    QStringList requestSeparation(QString text, QString sep);
+
 private slots:
-    void getMessage();
+    void getResponse();
 
 public slots:
     void sendSignUpRequest(QString login, QString password);
+    void sendLogInRequest(QString login, QString password);
+    void sendContactListRequest(QString login, QString password);
 
 signals:
 
