@@ -102,7 +102,6 @@ void Server::getRequest()
         {
             QString token = clientSocket->readAll();
             qDebug() << "GET_CONTACT_LIST_REQUEST. Passed token: " << token;
-            // TODO: separate authorization method???
             handleContactListRequest(clientSocket, token);
             break;
         }
@@ -160,6 +159,7 @@ void Server::handleRegistrationRequest(QTcpSocket *clientSocket, QString &login,
         int32_t id = sqlitedb->addUser(login, password);
         qDebug() << "New user id: " << id;
         result = "SCSS";
+        message = login;
     }
     sendRegistrationResponse(clientSocket, result, message);
 }
@@ -195,7 +195,7 @@ void Server::handleAuthorizationRequest(QTcpSocket *clientSocket, QString &login
             qDebug() << "Generated token: " << token;
             sqlitedb->updateToken(userId, token, getConnectionTimeStamp());
             result = "SCSS";
-            message = token;
+            message = token + " /s " + login;
             userIDToSocket[userId] = clientSocket;
             socketToUserID[clientSocket] = userId;
         }

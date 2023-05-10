@@ -127,7 +127,6 @@ void ClientSocket::sendSignUpRequest(QString login, QString password)
 {
     qDebug() << "Sign Up requested. Login: " << login << ", password: " << password;
     QString request = "REGI";
-    client->userLogin = login; // TODO: send back with response from server and do it after
     request.append(QString("%1 /s %2").arg(login).arg(password));
     tcpSocket->write(request.toUtf8());
 }
@@ -136,7 +135,6 @@ void ClientSocket::sendLogInRequest(QString login, QString password)
 {
     qDebug() << "Log in requested. Login: " << login << ", password: " << password;
     QString request = "AUTH";
-    client->userLogin = login; // TODO: send back with response from server and do it after
     request.append(QString("%1 /s %2").arg(login).arg(password));
     tcpSocket->write(request.toUtf8());
 }
