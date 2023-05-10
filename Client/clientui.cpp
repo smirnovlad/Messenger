@@ -125,7 +125,7 @@ void ClientUI::handleAuthorization(QStringList result)
     } else if (result[0] == "NFND" || result[0] == "IPSW") {
         QMessageBox::warning(this, "Authorization failed", "Incorrect login or password.");
     } else if (result[0] == "ISYM") {
-        QMessageBox::warning(this, "Registration failed", "You can not use these symbols for login:\n" +
+        QMessageBox::warning(this, "Authorization failed", "You can not use these symbols for login:\n" +
                              result[1] + "\nYou can not youse these symbols for password:\n" +
                             result[2] + "\nPassword must contain at least one non-space symbol.");
     } else if (result[0] == "SCSS") {
@@ -220,7 +220,7 @@ void ClientUI::handleLogOut(QString result)
     }
 }
 
-void ClientUI::handleConnectionError()
+void ClientUI::handleConnectionError(QStringList request)
 {
     while (client->clientSocket->tcpSocket->state() != QAbstractSocket::ConnectedState) {
         QMessageBox msgBox;
@@ -230,5 +230,10 @@ void ClientUI::handleConnectionError()
         if (msgBox.clickedButton() == pButtonTryAgain) {
             client->clientSocket->connectSocketToHost();
         }
+    }
+    if (request[0] == "CHAT") {
+        setChatWidget(request[1]);
+    } else if (request[0] == "CTCS") {
+        setUserListWidget();
     }
 }

@@ -11,7 +11,7 @@ Client::Client(QObject *parent)
 void Client::saveToken(QString token)
 {
     QString tokenFileName = userLogin + "_token";
-    QString pathToToken = QString(QDir::currentPath() + "/../" + tokenFileName);
+    QString pathToToken = QString(QDir::currentPath() + "/../Client/" + tokenFileName);
     QFile file;
     file.setFileName(pathToToken);
     if (file.open(QIODevice::WriteOnly|QIODevice::Text)) {
@@ -26,7 +26,7 @@ void Client::saveToken(QString token)
 QString Client::getToken()
 {
     QString tokenFileName = userLogin + "_token";
-    QString pathToToken = QString(QDir::currentPath() + "/../" + tokenFileName);
+    QString pathToToken = QString(QDir::currentPath() + "/../Client/" + tokenFileName);
     QFile file;
     file.setFileName(pathToToken);
     QString token;

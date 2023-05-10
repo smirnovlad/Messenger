@@ -42,7 +42,7 @@ public:
                     QList<QString>& text, QList<QString>& timestamp);
     void handleSendMessage(QStringList result);
     void handleLogOut(QString result);
-    void handleConnectionError();
+    void handleConnectionError(QStringList request);
 
 private slots:
     void setRegistrationWidget();

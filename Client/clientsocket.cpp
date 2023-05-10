@@ -134,7 +134,11 @@ void ClientSocket::sendSignUpRequest(QString login, QString password)
     QString request = "REGI";
 
     if (tcpSocket->state() != QAbstractSocket::ConnectedState) {
-        client->clientUI->handleConnectionError();
+        QStringList userRequest;
+        userRequest.append(request);
+        userRequest.append(login);
+        userRequest.append(password);
+        client->clientUI->handleConnectionError(userRequest);
     } else {
         request.append(QString("%1 /s %2").arg(login).arg(password));
         tcpSocket->write(request.toUtf8());
@@ -147,7 +151,11 @@ void ClientSocket::sendLogInRequest(QString login, QString password)
     QString request = "AUTH";
 
     if (tcpSocket->state() != QAbstractSocket::ConnectedState) {
-        client->clientUI->handleConnectionError();
+        QStringList userRequest;
+        userRequest.append(request);
+        userRequest.append(login);
+        userRequest.append(password);
+        client->clientUI->handleConnectionError(userRequest);
     } else {
         request.append(QString("%1 /s %2").arg(login).arg(password));
         tcpSocket->write(request.toUtf8());
@@ -160,7 +168,9 @@ void ClientSocket::sendContactListRequest()
     QString request = "CTCS";
 
     if (tcpSocket->state() != QAbstractSocket::ConnectedState) {
-        client->clientUI->handleConnectionError();
+        QStringList userRequest;
+        userRequest.append(request);
+        client->clientUI->handleConnectionError(userRequest);
     } else {
         request.append(QString("%1").arg(client->getToken()));
         tcpSocket->write(request.toUtf8());
@@ -174,7 +184,10 @@ void ClientSocket::sendChatRequest(QString secondUser)
     QString request = "CHAT";
 
     if (tcpSocket->state() != QAbstractSocket::ConnectedState) {
-        client->clientUI->handleConnectionError();
+        QStringList userRequest;
+        userRequest.append(request);
+        userRequest.append(secondUser);
+        client->clientUI->handleConnectionError(userRequest);
     } else {
         request.append(QString("%1 /s %2 /s %3").arg(client->userLogin).arg(secondUser)
                                             .arg(client->getToken()));
@@ -190,7 +203,11 @@ void ClientSocket::sendSendMessageRequest(QString secondUser, QString message)
     QString request = "MSSG";
 
     if (tcpSocket->state() != QAbstractSocket::ConnectedState) {
-        client->clientUI->handleConnectionError();
+        QStringList userRequest;
+        userRequest.append(request);
+        userRequest.append(secondUser);
+        userRequest.append(message);
+        client->clientUI->handleConnectionError(userRequest);
     } else {
         request.append(QString("%1 /s %2 /s %3 /s %4").arg(client->userLogin).arg(secondUser)
                                                         .arg(message).arg(client->getToken()));
@@ -204,7 +221,9 @@ void ClientSocket::sendLogOutRequest()
     QString request = "LOGO"; // log out
 
     if (tcpSocket->state() != QAbstractSocket::ConnectedState) {
-        client->clientUI->handleConnectionError();
+        QStringList userRequest;
+        userRequest.append(request);
+        client->clientUI->handleConnectionError(userRequest);
     } else {
         tcpSocket->write(request.toUtf8());
     }
