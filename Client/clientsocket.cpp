@@ -72,13 +72,14 @@ void ClientSocket::getResponse()
 
         case COMMAND::CONTACT_LIST_RESPONSE:
         {
-            QList< QPair<QString, QString> > result;
-            QStringList pairs = requestSeparation(message, " /n ");
-            for (QString& pairString: pairs) {
-                QStringList pair = requestSeparation(pairString, " /s ");
-                result.push_back({pair[0], pair[1]});
+            QList< QPair<QString, QString> > contactList;
+            QStringList splitWords = requestSeparation(message, " /n ");
+            QString result = splitWords[0];
+            for (uint32_t i = 1; i < splitWords.size(); ++i) {
+                QStringList pair = requestSeparation(splitWords[i], " /s ");
+                contactList.push_back({pair[0], pair[1]});
             }
-            client->clientUI->handleContactList(result);
+            client->clientUI->handleContactList(result, contactList);
             break;
         }
 
@@ -86,17 +87,18 @@ void ClientSocket::getResponse()
         {
             QList<QString> fromUser, toUser, text, timestamp;
             qDebug() << "Message list response: " << message;
-            if (message.length()) {
-                QStringList tuples = requestSeparation(message, " /n ");
-                for (QString& tupleString: tuples) {
-                    QStringList tuple = requestSeparation(tupleString, " /s ");
+            QStringList splitWords = requestSeparation(message, " /n ");
+            QString result = splitWords[0];
+            if (splitWords[1] != "") {
+                for (uint32_t i = 1; i < splitWords.size(); ++i) {
+                    QStringList tuple = requestSeparation(splitWords[i], " /s ");
                     fromUser.push_back(tuple[0]);
                     toUser.push_back(tuple[1]);
                     text.push_back(tuple[2]);
                     timestamp.push_back(tuple[3]);
                 }
             }
-            client->clientUI->handleChat(fromUser, toUser, text, timestamp);
+            client->clientUI->handleChat(result, fromUser, toUser, text, timestamp);
             break;
         }
 
@@ -128,11 +130,11 @@ void ClientSocket::sendLogInRequest(QString login, QString password)
     tcpSocket->write(request.toUtf8());
 }
 
-void ClientSocket::sendContactListRequest(QString login, QString password)
+void ClientSocket::sendContactListRequest()
 {
-    qDebug() << "Contact list requested. Login: " << login << ", password: " << password;
+    qDebug() << "Contact list requested. Username: " << client->userLogin;
     QString request = "CTCS";
-    request.append(QString("%1 /s %2").arg(login).arg(password));
+    request.append(QString("%1").arg(client->getToken()));
     tcpSocket->write(request.toUtf8());
 }
 
@@ -141,7 +143,8 @@ void ClientSocket::sendChatRequest(QString secondUser)
     qDebug() << "Chat requested. First user: " << client->userLogin <<
                 ", second user: " << secondUser;
     QString request = "CHAT";
-    request.append(QString("%1 /s %2").arg(client->userLogin).arg(secondUser));
+    request.append(QString("%1 /s %2 /s %3").arg(client->userLogin).arg(secondUser)
+                                            .arg(client->getToken()));
     tcpSocket->write(request.toUtf8());
     qDebug() << "Written in socket";
 }
@@ -151,6 +154,7 @@ void ClientSocket::sendSendMessageRequest(QString secondUser, QString message)
     qDebug() << "Sending message requested. First user: " << client->userLogin <<
                 ", second user: " << secondUser << ". Message: " << message;
     QString request = "MSSG";
-    request.append(QString("%1 /s %2 /s %3").arg(client->userLogin).arg(secondUser).arg(message));
+    request.append(QString("%1 /s %2 /s %3 /s %4").arg(client->userLogin).arg(secondUser)
+                                                    .arg(message).arg(client->getToken()));
     tcpSocket->write(request.toUtf8());
 }

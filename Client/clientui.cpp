@@ -46,7 +46,6 @@ QLayoutItem* ClientUI::getActiveItem() {
 
 void ClientUI::setAuthorizationWidget()
 {
-    // emit this->client->clientSocket->tcpSocket->disconnected();
     qDebug() << "Switched to log in";
     this->clearLayout();
     Authorization *authorizationWidget = new Authorization(this);
@@ -85,7 +84,7 @@ void ClientUI::setUserListWidget()
             SLOT(sendChatRequest(QListWidgetItem*)));
 
     ui->contentWidget->layout()->addWidget(contactListWidget);
-    this->client->clientSocket->sendContactListRequest("", ""); // TODO
+    this->client->clientSocket->sendContactListRequest();
 }
 
 void ClientUI::setChatWidget(QString name)
@@ -128,24 +127,36 @@ void ClientUI::handleAuthorization(QStringList result)
     } else if (result[0] == "NFND" || result[0] == "IPSW") {
         QMessageBox::warning(this, "Authorization failed", "Incorrect login or password");
     } else if (result[0] == "SCSS") {
-        qDebug() << "Generated token: " << result[1];
+        // qDebug() << "Generated token: " << result[1];
         client->saveToken(result[1]);
         QMessageBox::information(this, "Authorization success", "You are loged in");
         this->setUserListWidget();
     }
 }
 
-void ClientUI::handleContactList(const QList< QPair<QString, QString> >& result)
+void ClientUI::handleContactList(QString result, const QList< QPair<QString, QString> >& contactList)
 {
-    QLayoutItem *activeItem = getActiveItem();
-    static_cast<UserList*>(activeItem->widget())->setContactList(result);
+    if (result == "SCSS") {
+        QLayoutItem *activeItem = getActiveItem();
+        static_cast<UserList*>(activeItem->widget())->setContactList(contactList);
+    } else if (result == "ITKN") {
+        this->handleIncorrectToken();
+    }
 }
 
-void ClientUI::handleChat(QList<QString> &fromUser, QList<QString> &toUser,
+void ClientUI::handleChat(QString result, QList<QString> &fromUser, QList<QString> &toUser,
                           QList<QString> &text, QList<QString> &timestamp)
 {
-    QLayoutItem *activeItem = getActiveItem();
-    static_cast<Chat*>(activeItem->widget())->setMessageList(fromUser, toUser, text, timestamp, client->userLogin);
+    if (result == "SCSS") {
+        QLayoutItem *activeItem = getActiveItem();
+        static_cast<Chat*>(activeItem->widget())->setMessageList(fromUser,
+                                                                 toUser,
+                                                                 text,
+                                                                 timestamp,
+                                                                 client->userLogin);
+    } else if (result == "ITKN") {
+        this->handleIncorrectToken();
+    }
 }
 
 void ClientUI::sendChatRequest(QListWidgetItem* contact)
@@ -179,6 +190,8 @@ void ClientUI::handleSendMessage(QStringList result)
                 // QMessageBox::information(this, "Receiving success", "Message was received");
             }
         }
+    } else if (result[0] == "ITKN") {
+        handleIncorrectToken();
     } else {
         if (sender == client->userLogin) {
             QMessageBox::warning(this, "Sending failed", "Message was not sent");
@@ -186,4 +199,11 @@ void ClientUI::handleSendMessage(QStringList result)
             QMessageBox::warning(this, "Receiving failed", "Message was not received");
         }
     }
+}
+
+void ClientUI::handleIncorrectToken()
+{
+    client->userLogin = "";
+    QMessageBox::warning(this, "Request failed", "Incorrect token. Please log in.");
+    this->setAuthorizationWidget();
 }

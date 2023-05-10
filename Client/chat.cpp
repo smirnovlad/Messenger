@@ -43,6 +43,7 @@ void Chat::setMessageList(QList<QString> &fromUser, QList<QString> &toUser,
         ui->messageList->addItem(item);
         ui->messageList->setItemWidget(item, messageWidget);
     }
+    ui->messageList->scrollToBottom();
 }
 
 void Chat::sendMessage()
@@ -69,6 +70,8 @@ void Chat::sendMessage(QString timestamp)
     ui->messageList->setItemWidget(item, messageWidget);
 
     ui->lineEdit->setText("");
+
+    ui->messageList->scrollToBottom();
 }
 
 void Chat::receiveMessage(QString message, QString timestamp)
@@ -84,4 +87,6 @@ void Chat::receiveMessage(QString message, QString timestamp)
     item->setSizeHint(messageWidget->sizeHint());
     ui->messageList->addItem(item);
     ui->messageList->setItemWidget(item, messageWidget);
+
+    ui->messageList->scrollToBottom();
 }

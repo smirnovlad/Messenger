@@ -31,6 +31,8 @@ private:
 
     QString getConnectionTimeStamp();
     QString generateToken();
+    bool checkToken(QTcpSocket *clientSocket, QString token);
+    bool checkTimeStamp(QString timeStamp);
 
 private:
     void handleRegistrationRequest(QTcpSocket *clientSocket, QString &login, QString &password);
@@ -39,14 +41,15 @@ private:
     void handleAuthorizationRequest(QTcpSocket *clientSocket, QString &login, QString &password);
     void sendAuthorizationResponse(QTcpSocket *clientSocket, QString message);
 
-    void handleContactListRequest(QTcpSocket *clientSocket, QString &login, QString &password);
-    void sendContactListResponse(QTcpSocket *clientSocket, QString& contactList);
+    void handleContactListRequest(QTcpSocket *clientSocket, QString token);
+    void sendContactListResponse(QTcpSocket *clientSocket, QString message);
 
-    void handleMessageListRequest(QTcpSocket *clientSocket, QString firstUser, QString secondUser);
-    void sendMessageListResponse(QTcpSocket *clientSocket, QString& messageList);
+    void handleMessageListRequest(QTcpSocket *clientSocket, QString firstUser,
+                                  QString secondUser, QString token);
+    void sendMessageListResponse(QTcpSocket *clientSocket, QString message);
 
     void handleSendMessageRequest(QTcpSocket *clientSocket, QString sender, QString receiver,
-                                  QString message);
+                                  QString message, QString token);
     void sendSendMessageResponse(QTcpSocket *clientSocket, QString result, QString message,
                                  QString firstUser, QString secondUser, QString timestamp);
 
@@ -55,6 +58,6 @@ private slots:
     void handleDisconnection();
     void getRequest();
 
-    QStringList requestSeparation(QString text);
+    QStringList requestSeparation(QString text, QString sep);
 };
 #endif // SERVER_H

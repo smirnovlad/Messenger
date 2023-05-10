@@ -27,6 +27,7 @@ public:
     void sendMessage(QString firstUser, QString secondUser, QString message, QString timestamp);
 
     void updateToken(int32_t userId, QString token, QString timestamp);
+    void getToken(int32_t userId, QString& token, QString& timestamp);
 };
 
 #endif // SQLITEDB_H

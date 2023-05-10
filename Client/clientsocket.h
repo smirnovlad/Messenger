@@ -28,7 +28,7 @@ private slots:
 public slots:
     void sendSignUpRequest(QString login, QString password);
     void sendLogInRequest(QString login, QString password);
-    void sendContactListRequest(QString login, QString password);
+    void sendContactListRequest();
     void sendChatRequest(QString secondUser);
     void sendSendMessageRequest(QString secondUser, QString message);
 

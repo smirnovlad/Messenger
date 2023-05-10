@@ -155,22 +155,41 @@ void SQLiteDB::sendMessage(QString firstUser, QString secondUser, QString messag
 
 void SQLiteDB::updateToken(int32_t userId, QString token, QString timestamp)
 {
-    // query.prepare("UPDATE Users SET OnlineStatus='Online' WHERE UserName='" + user_name + "'");
     QSqlQuery query(DB);
-    if (query.exec("SELECT id, login FROM Tokens WHERE id=" + QString::number(userId))) {
+    if (query.exec("SELECT id FROM Tokens WHERE userId=" + QString::number(userId))) {
         if (query.next()) {
-            query.exec("UPDATE Tokens SET token=" + token +
-                       " WHERE id=" + QString::number(userId));
-            query.exec("UPDATE Tokens SET creationTimeStamp=" + timestamp +
-                       " WHERE id=" + QString::number(userId));
+            qDebug() << "Token updating";
+            if (!query.exec("UPDATE Tokens SET token='" + token +
+                       "' WHERE userId=" + QString::number(userId))) {
+                qDebug() << "Bad query while updating token.";
+            }
+            query.exec("UPDATE Tokens SET creationTimeStamp='" + timestamp +
+                       "' WHERE userId=" + QString::number(userId));
         } else {
+            qDebug() << "Token creating";
             query.prepare("INSERT INTO Tokens (userId, token, creationTimeStamp) "
-                        "VALUES (:userId, :token, )");
+                        "VALUES (:userId, :token, :creationTimeStamp)");
             query.bindValue(":userId", userId);
             query.bindValue(":token", token);
             query.bindValue(":creationTimeStamp", timestamp);
             query.exec();
         }
         return;
+    } else {
+        qDebug() << "Bad query while searching user token.";
+    }
+}
+
+void SQLiteDB::getToken(int32_t userId, QString &token, QString &timestamp)
+{
+    QSqlQuery query(DB);
+    if (query.exec("SELECT token, creationTimeStamp FROM Tokens WHERE userId=" + QString::number(userId))) {
+        if (query.next()) {
+            token = query.value(0).toString();
+            timestamp = query.value(1).toString();
+        }
+        return;
+    }else {
+        qDebug() << "Bad query while getting token.";
     }
 }

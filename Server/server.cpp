@@ -1,6 +1,8 @@
 #include "server.h"
 
 #include <QDir>
+#include <random>
+#include <chrono>
 
 Server::Server(QObject *parent)
     : QObject(parent)
@@ -38,10 +40,10 @@ void Server::handleDisconnection()
     userIDToSocket.remove(id);
 }
 
-QStringList Server::requestSeparation(QString text)
+QStringList Server::requestSeparation(QString text, QString sep)
 {
     QString outStr =  text;
-    QStringList list = outStr.split(" /s ");
+    QStringList list = outStr.split(sep);
 
     return list;
 }
@@ -75,13 +77,11 @@ void Server::getRequest()
         command = COMMAND::SEND_MESSAGE_REQUEST;
     }
 
-    QStringList splitWords;
-
     switch (command)
     {
         case COMMAND::REGISTRATION_REQUEST:
         {
-            splitWords = requestSeparation(clientSocket->readAll());
+            QStringList splitWords = requestSeparation(clientSocket->readAll(), " /s ");
             qDebug() << "REGISTRATION_REQUEST: " << splitWords;
             handleRegistrationRequest(clientSocket, splitWords[0], splitWords[1]);
             break;
@@ -89,7 +89,7 @@ void Server::getRequest()
 
         case COMMAND::AUTHORIZATION_REQUEST:
         {
-            splitWords = requestSeparation(clientSocket->readAll());
+            QStringList splitWords = requestSeparation(clientSocket->readAll(), " /s ");
             qDebug() << "AUTHORIZATION_REQUEST: " << splitWords;
             handleAuthorizationRequest(clientSocket, splitWords[0], splitWords[1]);
             break;
@@ -97,26 +97,28 @@ void Server::getRequest()
 
         case COMMAND::CONTACT_LIST_REQUEST:
         {
-            splitWords = requestSeparation(clientSocket->readAll());
-            qDebug() << "GET_CONTACT_LIST_REQUEST: " << splitWords;
+            QString token = clientSocket->readAll();
+            qDebug() << "GET_CONTACT_LIST_REQUEST. Passed token: " << token;
             // TODO: separate authorization method???
-            handleContactListRequest(clientSocket, splitWords[0], splitWords[1]);
+            handleContactListRequest(clientSocket, token);
             break;
         }
 
         case COMMAND::MESSAGE_LIST_REQUEST:
         {
-            splitWords = requestSeparation(clientSocket->readAll());
-            qDebug() << "GET_MESSAGE_LIST_REQUEST: " << splitWords;
-            handleMessageListRequest(clientSocket, splitWords[0], splitWords[1]);
+            QStringList splitWords = requestSeparation(clientSocket->readAll(), " /s ");
+            qDebug() << "GET_MESSAGE_LIST_REQUEST. From: " << splitWords[0]
+                     << ", to: " << splitWords[1] << ", passed token: " << splitWords[2];
+            handleMessageListRequest(clientSocket, splitWords[0], splitWords[1], splitWords[2]);
             break;
         }
 
         case COMMAND::SEND_MESSAGE_REQUEST:
         {
-            splitWords = requestSeparation(clientSocket->readAll());
+            QStringList splitWords = requestSeparation(clientSocket->readAll(), " /s ");
             qDebug() << "SEND_MESSAGE_REQUEST: " << splitWords;
-            handleSendMessageRequest(clientSocket, splitWords[0], splitWords[1], splitWords[2]);
+            handleSendMessageRequest(clientSocket, splitWords[0], splitWords[1], splitWords[2],
+                                        splitWords[3]);
             break;
         }
     }
@@ -161,52 +163,65 @@ void Server::handleAuthorizationRequest(QTcpSocket *clientSocket, QString &login
     if(login.length() < 4 || password.length() < 4) {
         sendAuthorizationResponse(clientSocket, "ILEN");
     } else {
-        int32_t id = sqlitedb->findUser(login);
-        qDebug() << "User ID in DB: " << id;
-        if (id == -1) {
+        int32_t userId = sqlitedb->findUser(login);
+        qDebug() << "User ID in DB: " << userId;
+        if (userId == -1) {
             sendAuthorizationResponse(clientSocket, "NFND"); // not found
-        } else if (!sqlitedb->checkPassword(id, password)) {
+        } else if (!sqlitedb->checkPassword(userId, password)) {
             sendAuthorizationResponse(clientSocket, "IPSW"); // incorrect password
         } else {
             QString token = generateToken();
-            sqlitedb->updateToken(id, token, getConnectionTimeStamp());
+            qDebug() << "Generated token: " << token;
+            sqlitedb->updateToken(userId, token, getConnectionTimeStamp());
             sendAuthorizationResponse(clientSocket, "SCSS /s " + token);
-            userIDToSocket[id] = clientSocket;
-            socketToUserID[clientSocket] = id;
+            userIDToSocket[userId] = clientSocket;
+            socketToUserID[clientSocket] = userId;
         }
     }
 }
 
-void Server::sendContactListResponse(QTcpSocket *clientSocket, QString& contactList)
+void Server::sendContactListResponse(QTcpSocket *clientSocket, QString message)
 {
     QString response = "CTCS";
-    response.append(contactList);
-    qDebug() << "Contact list: " << contactList;
+    response.append(message);
+    qDebug() << "Result, contact list: " << message;
     clientSocket->write(response.toUtf8());
 }
 
-void Server::handleContactListRequest(QTcpSocket *clientSocket, QString &login, QString &password)
+void Server::handleContactListRequest(QTcpSocket *clientSocket, QString token)
 {
-    // TODO: separate authorization method???
     QString contactList;
-    sqlitedb->getContactList(contactList);
-    sendContactListResponse(clientSocket, contactList);
+    QString result;
+    if (checkToken(clientSocket, token)) {
+        sqlitedb->getContactList(contactList);
+        result = "SCSS /n ";
+    } else {
+        result = "ITKN /n "; // incorrect token
+    }
+    sendContactListResponse(clientSocket, result + contactList);
 }
 
-void Server::sendMessageListResponse(QTcpSocket *clientSocket, QString &messageList)
+void Server::sendMessageListResponse(QTcpSocket *clientSocket, QString message)
 {
     QString response = "CHAT";
-    response.append(messageList);
-    qDebug() << "Message list: " << messageList;
+    response.append(message);
+    qDebug() << "Message list response: " << response;
     clientSocket->write(response.toUtf8());
 }
 
-void Server::handleMessageListRequest(QTcpSocket *clientSocket, QString firstUser, QString secondUser)
+void Server::handleMessageListRequest(QTcpSocket *clientSocket, QString firstUser,
+                                      QString secondUser, QString token)
 {
     QString messageList;
+    QString result;
+    if (checkToken(clientSocket, token)) {
+        sqlitedb->getMessageList(messageList, firstUser, secondUser);
+        result = "SCSS /n ";
+    } else {
+        result = "ITKN /n "; // incorrect token
+    }
     // TODO: solve problem if message contains separator " /s "
-    sqlitedb->getMessageList(messageList, firstUser, secondUser);
-    sendMessageListResponse(clientSocket, messageList);
+    sendMessageListResponse(clientSocket, result + messageList);
 }
 
 void Server::sendSendMessageResponse(QTcpSocket *clientSocket, QString result, QString message,
@@ -219,16 +234,24 @@ void Server::sendSendMessageResponse(QTcpSocket *clientSocket, QString result, Q
 }
 
 void Server::handleSendMessageRequest(QTcpSocket *clientSocket, QString sender,
-                                      QString receiver, QString message)
+                                      QString receiver, QString message, QString token)
 {
+    QString result;
     QString timestamp = getConnectionTimeStamp();
-    sqlitedb->sendMessage(sender, receiver, message, timestamp);
-    sendSendMessageResponse(clientSocket, "SCSS", message, sender,
+    if (checkToken(clientSocket, token)) {
+        sqlitedb->sendMessage(sender, receiver, message, timestamp);
+        result = "SCSS";
+    } else {
+        result = "ITKN"; // incorrect token
+    }
+    sendSendMessageResponse(clientSocket, result, message, sender,
                             receiver, timestamp);
-    uint32_t secondUserID = sqlitedb->findUser(receiver);
-    if (userIDToSocket.find(secondUserID) != userIDToSocket.end()) {
-        sendSendMessageResponse(userIDToSocket[secondUserID], "SCSS", message, sender,
-                                receiver, timestamp);
+    if (result == "SCSS") {
+        uint32_t secondUserID = sqlitedb->findUser(receiver);
+        if (userIDToSocket.find(secondUserID) != userIDToSocket.end()) {
+            sendSendMessageResponse(userIDToSocket[secondUserID], result, message, sender,
+                                    receiver, timestamp);
+        }
     }
 }
 
@@ -240,17 +263,45 @@ QString Server::getConnectionTimeStamp()
 
 QString Server::generateToken()
 {
+    std::mt19937 gen(std::chrono::high_resolution_clock::now().time_since_epoch().count());
+
     const QString possibleCharacters("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789");
     const uint32_t randomStringLength = 32;
 
     QString token;
     for(uint32_t i = 0; i < randomStringLength; ++i)
     {
-        uint32_t index = qrand() % possibleCharacters.length();
+        uint32_t index = gen() % possibleCharacters.length();
         QChar nextChar = possibleCharacters.at(index);
         token.append(nextChar);
     }
     return token;
+}
+
+bool Server::checkToken(QTcpSocket *clientSocket, QString token)
+{
+    int32_t userId = socketToUserID[clientSocket];
+    QString lastToken, lastCreationTimeStamp;
+    sqlitedb->getToken(userId, lastToken, lastCreationTimeStamp);
+    qDebug() << "Passed token: " << token << ", lastToken = " << lastToken;
+    return (token == lastToken && checkTimeStamp(lastCreationTimeStamp));
+}
+
+bool Server::checkTimeStamp(QString timeStamp)
+{
+    QString currentTimeStamp = getConnectionTimeStamp();
+    QStringList splitCTS = requestSeparation(currentTimeStamp, " "),
+                splitTS = requestSeparation(timeStamp, " ");
+    QString clocksCTS = splitCTS[3],
+            clocksTS = splitTS[3];
+    if (splitCTS[1] == splitTS[1] && splitCTS[2] == splitTS[2]) { // compare days
+        QStringList splitClocksCTS = requestSeparation(clocksCTS, ":");
+        QStringList splitClocksTS = requestSeparation(clocksTS, ":");
+        if (std::abs(splitClocksCTS[0].toInt() - splitClocksTS[0].toInt()) <= 12) { // compare hours
+            return true;
+        }
+    }
+    return false;
 }
 
 Server::~Server()

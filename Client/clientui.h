@@ -32,11 +32,13 @@ private:
     void clearLayout();
     QLayoutItem* getActiveItem();
 
+    void handleIncorrectToken();
+
 public:
     void handleRegistration(QString result);
     void handleAuthorization(QStringList result);
-    void handleContactList(const QList< QPair<QString, QString> >& result);
-    void handleChat(QList<QString>& fromUser, QList<QString>& toUser,
+    void handleContactList(QString result, const QList< QPair<QString, QString> >& contactList);
+    void handleChat(QString result, QList<QString>& fromUser, QList<QString>& toUser,
                     QList<QString>& text, QList<QString>& timestamp);
     void handleSendMessage(QStringList result);
 

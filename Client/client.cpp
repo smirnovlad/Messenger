@@ -30,7 +30,7 @@ QString Client::getToken()
     QFile file;
     file.setFileName(pathToToken);
     QString token;
-    if (file.open(QIODevice::WriteOnly|QIODevice::Text)) {
+    if (file.open(QIODevice::ReadOnly|QIODevice::Text)) {
         QTextStream stream(&file);
         stream >> token;
         file.close();
