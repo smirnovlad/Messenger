@@ -82,9 +82,11 @@ void ClientSocket::getResponse()
             QList< QPair<QString, QString> > contactList;
             QStringList splitWords = requestSeparation(message, " /n ");
             QString result = splitWords[0];
-            for (uint32_t i = 1; i < splitWords.size(); ++i) {
+            if (splitWords[1] != "") {
+              for (uint32_t i = 1; i < splitWords.size(); ++i) {
                 QStringList pair = requestSeparation(splitWords[i], " /s ");
                 contactList.push_back({pair[0], pair[1]});
+              }
             }
             client->clientUI->handleContactList(result, contactList);
             break;
