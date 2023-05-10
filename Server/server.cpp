@@ -22,8 +22,6 @@ void Server::handleConnectionRequest()
 {
     QTcpSocket *newSocket = tcpServer->nextPendingConnection();
 
-//    qDebug() << "newSocket: " << newSocket;
-
     connect(newSocket, SIGNAL(disconnected()), this, SLOT(handleDisconnection()));
     connect(newSocket, SIGNAL(readyRead()), this, SLOT(getRequest()));
 
@@ -324,10 +322,16 @@ QString Server::generateToken()
 
 bool Server::checkToken(QTcpSocket *clientSocket, QString token)
 {
-    int32_t userId = socketToUserID[clientSocket];
+    int32_t userId = -1;
+    // if server was disconnected, socketToUserID can be empty, so...
+    auto it = socketToUserID.find(clientSocket);
+    if (it != socketToUserID.end()) {
+        userId = *it;
+    }
+
     QString lastToken, lastCreationTimeStamp;
     sqlitedb->getToken(userId, lastToken, lastCreationTimeStamp);
-    qDebug() << "Passed token: " << token << ", lastToken = " << lastToken;
+    qDebug() << "userId = " << userId << ", passed token: " << token << ", last token = " << lastToken;
     return (token == lastToken && checkTimeStamp(lastCreationTimeStamp));
 }
 

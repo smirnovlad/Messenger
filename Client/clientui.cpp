@@ -105,12 +105,12 @@ void ClientUI::setChatWidget(QString name)
 void ClientUI::handleRegistration(QStringList result)
 {
     if (result[0] == "ILEN") {
-        QMessageBox::warning(this, "Registration failed", "Login and password length must be at least 4");
+        QMessageBox::warning(this, "Registration failed", "Login and password length must be at least 4.");
     } else if (result[0] == "ALRD") {
-        QMessageBox::warning(this, "Registration failed", "You have been already registered");
+        QMessageBox::warning(this, "Registration failed", "You have been already registered.");
     } else if (result[0] == "ISYM") {
-        QMessageBox::warning(this, "Registration failed", "You can't use these symbols for login:\n" +
-                             result[1] + "\nYou can't youse these symbols for password:\n" +
+        QMessageBox::warning(this, "Registration failed", "You can nott use these symbols for login:\n" +
+                             result[1] + "\nYou can not youse these symbols for password:\n" +
                             result[2] + "\nPassword must contain at least one non-space symbol.");
     } else if (result[0] == "SCSS") {
         QMessageBox::information(this, "Registration success", "You are registered. Your login: " + result[1]);
@@ -121,12 +121,12 @@ void ClientUI::handleRegistration(QStringList result)
 void ClientUI::handleAuthorization(QStringList result)
 {
     if (result[0] == "ILEN") {
-        QMessageBox::warning(this, "Authorization failed", "Login and password length must be at least 4");
+        QMessageBox::warning(this, "Authorization failed", "Login and password length must be at least 4.");
     } else if (result[0] == "NFND" || result[0] == "IPSW") {
-        QMessageBox::warning(this, "Authorization failed", "Incorrect login or password");
+        QMessageBox::warning(this, "Authorization failed", "Incorrect login or password.");
     } else if (result[0] == "ISYM") {
-        QMessageBox::warning(this, "Registration failed", "You can't use these symbols for login:\n" +
-                             result[1] + "\nYou can't youse these symbols for password:\n" +
+        QMessageBox::warning(this, "Registration failed", "You can not use these symbols for login:\n" +
+                             result[1] + "\nYou can not youse these symbols for password:\n" +
                             result[2] + "\nPassword must contain at least one non-space symbol.");
     } else if (result[0] == "SCSS") {
         // qDebug() << "Generated token: " << result[1];
@@ -185,21 +185,21 @@ void ClientUI::handleSendMessage(QStringList result)
         if (sender == client->userLogin) {
             Chat* chatWidget = static_cast<Chat*>(activeItem->widget());
             chatWidget->sendMessage(timestamp);
-            // QMessageBox::information(this, "Sending success", "Message was sent");
+            // QMessageBox::information(this, "Sending success", "Message was sent.");
         } else {
             Chat* chatWidget = dynamic_cast<Chat*>(activeItem->widget());
             if (chatWidget != nullptr) {
                 chatWidget->receiveMessage(message, timestamp);
-                // QMessageBox::information(this, "Receiving success", "Message was received");
+                // QMessageBox::information(this, "Receiving success", "Message was received.");
             }
         }
     } else if (result[0] == "ITKN") {
         handleIncorrectToken();
     } else {
         if (sender == client->userLogin) {
-            QMessageBox::warning(this, "Sending failed", "Message was not sent");
+            QMessageBox::warning(this, "Sending failed", "Message was not sent.");
         } else {
-            QMessageBox::warning(this, "Receiving failed", "Message was not received");
+            QMessageBox::warning(this, "Receiving failed", "Message was not received.");
         }
     }
 }
@@ -216,6 +216,19 @@ void ClientUI::handleLogOut(QString result)
         client->userLogin = "";
         setAuthorizationWidget();
     } else if (result == "FAIL") {
-        QMessageBox::warning(this, "Log out failed", "Internal error. You are still logged in");
+        QMessageBox::warning(this, "Log out failed", "Internal error. You are still logged in.");
+    }
+}
+
+void ClientUI::handleConnectionError()
+{
+    while (client->clientSocket->tcpSocket->state() != QAbstractSocket::ConnectedState) {
+        QMessageBox msgBox;
+        msgBox.setText("You are not connected to server. Would you like to try to connect?");
+        QAbstractButton *pButtonTryAgain = msgBox.addButton(tr("Try to connect"), QMessageBox::YesRole);
+        msgBox.exec();
+        if (msgBox.clickedButton() == pButtonTryAgain) {
+            client->clientSocket->connectSocketToHost();
+        }
     }
 }

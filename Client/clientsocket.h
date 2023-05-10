@@ -21,6 +21,7 @@ public:
     QTcpSocket *tcpSocket;
 
     QStringList requestSeparation(QString text, QString sep);
+    void connectSocketToHost();
 
 private slots:
     void getResponse();
