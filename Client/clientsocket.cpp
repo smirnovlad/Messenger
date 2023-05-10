@@ -59,7 +59,8 @@ void ClientSocket::getResponse()
     {
         case COMMAND::REGISTRATION_RESPONSE:
         {
-            client->clientUI->handleRegistration(message);
+            QStringList result = requestSeparation(message, " /s ");
+            client->clientUI->handleRegistration(result);
             break;
         }
 

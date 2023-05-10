@@ -27,6 +27,9 @@ private:
     QMap<uint32_t, QTcpSocket*> userIDToSocket;
     QMap<QTcpSocket*, uint32_t> socketToUserID;
 
+    QString incorrectLoginSymbols = "_' ,.!@#$%^&*()<>+=-/|~`\"";
+    QString incorrectPasswordSymbols = "/";
+
     quint32 nextBlockSize;
 
     QString getConnectionTimeStamp();
@@ -34,12 +37,15 @@ private:
     bool checkToken(QTcpSocket *clientSocket, QString token);
     bool checkTimeStamp(QString timeStamp);
 
+    bool isCorrectLogin(QString login);
+    bool isCorrectPassword(QString password);
+
 private:
     void handleRegistrationRequest(QTcpSocket *clientSocket, QString &login, QString &password);
-    void sendRegistrationResponse(QTcpSocket *clientSocket, QString message);
+    void sendRegistrationResponse(QTcpSocket *clientSocket, QString result, QString message);
 
     void handleAuthorizationRequest(QTcpSocket *clientSocket, QString &login, QString &password);
-    void sendAuthorizationResponse(QTcpSocket *clientSocket, QString message);
+    void sendAuthorizationResponse(QTcpSocket *clientSocket, QString result, QString message);
 
     void handleContactListRequest(QTcpSocket *clientSocket, QString token);
     void sendContactListResponse(QTcpSocket *clientSocket, QString message);

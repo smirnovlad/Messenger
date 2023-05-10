@@ -35,7 +35,7 @@ private:
     void handleIncorrectToken();
 
 public:
-    void handleRegistration(QString result);
+    void handleRegistration(QStringList result);
     void handleAuthorization(QStringList result);
     void handleContactList(QString result, const QList< QPair<QString, QString> >& contactList);
     void handleChat(QString result, QList<QString>& fromUser, QList<QString>& toUser,

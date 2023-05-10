@@ -102,16 +102,20 @@ void ClientUI::setChatWidget(QString name)
     ui->contentWidget->layout()->addWidget(chatWidget);
 }
 
-void ClientUI::handleRegistration(QString result)
+void ClientUI::handleRegistration(QStringList result)
 {
-    if (result != "SCSS") {
+    if (result[0] != "SCSS") {
         client->userLogin = "";
     }
-    if (result == "ILEN") {
+    if (result[0] == "ILEN") {
         QMessageBox::warning(this, "Registration failed", "Login and password length must be at least 4");
-    } else if (result == "ALRD") {
+    } else if (result[0] == "ALRD") {
         QMessageBox::warning(this, "Registration failed", "You have been already registered");
-    } else if (result == "SCSS") {
+    } else if (result[0] == "ISYM") {
+        QMessageBox::warning(this, "Registration failed", "You can't use these symbols for login:\n" +
+                             result[1] + "\nYou can't youse these symbols for password:\n" +
+                            result[2] + "\nPassword must contain at least one non-space symbol.");
+    } else if (result[0] == "SCSS") {
         QMessageBox::information(this, "Registration success", "You are registered");
         this->setAuthorizationWidget();
     }
@@ -126,6 +130,10 @@ void ClientUI::handleAuthorization(QStringList result)
         QMessageBox::warning(this, "Authorization failed", "Login and password length must be at least 4");
     } else if (result[0] == "NFND" || result[0] == "IPSW") {
         QMessageBox::warning(this, "Authorization failed", "Incorrect login or password");
+    } else if (result[0] == "ISYM") {
+        QMessageBox::warning(this, "Registration failed", "You can't use these symbols for login:\n" +
+                             result[1] + "\nYou can't youse these symbols for password:\n" +
+                            result[2] + "\nPassword must contain at least one non-space symbol.");
     } else if (result[0] == "SCSS") {
         // qDebug() << "Generated token: " << result[1];
         client->saveToken(result[1]);

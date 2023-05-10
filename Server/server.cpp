@@ -124,10 +124,10 @@ void Server::getRequest()
     }
 }
 
-void Server::sendRegistrationResponse(QTcpSocket *clientSocket, QString message)
+void Server::sendRegistrationResponse(QTcpSocket *clientSocket, QString result, QString message)
 {
     QString response = "REGI";
-    response.append(message);
+    response.append(result + " /s " + message);
     clientSocket->write(response.toUtf8());
 }
 
@@ -136,22 +136,28 @@ void Server::handleRegistrationRequest(QTcpSocket *clientSocket, QString &login,
     qDebug() << "Checking data to sign up...";
     qDebug() << "login: " << login << ", password: " << password;
 
+    QString result, message;
+
     // add: login and password don't contain symbols like space and others
     if(login.length() < 4 || password.length() < 4) {
-        sendRegistrationResponse(clientSocket, "ILEN");
+        result = "ILEN"; // incorrect length
+    } else if (!isCorrectLogin(login) || !isCorrectPassword(password)) {
+        result = "ISYM"; // incorrect symbols
+        message = incorrectLoginSymbols + " /s " + incorrectPasswordSymbols;
     } else if (sqlitedb->findUser(login) != -1){
-        sendRegistrationResponse(clientSocket, "ALRD");
+        result = "ALRD";
     } else {
         int32_t id = sqlitedb->addUser(login, password);
-        qDebug() << "new user id: " << id;
-        sendRegistrationResponse(clientSocket, "SCSS");
+        qDebug() << "New user id: " << id;
+        result = "SCSS";
     }
+    sendRegistrationResponse(clientSocket, result, message);
 }
 
-void Server::sendAuthorizationResponse(QTcpSocket *clientSocket, QString message)
+void Server::sendAuthorizationResponse(QTcpSocket *clientSocket, QString result, QString message)
 {
     QString response = "AUTH";
-    response.append(message);
+    response.append(result + " /s " + message);
     clientSocket->write(response.toUtf8());
 }
 
@@ -160,24 +166,31 @@ void Server::handleAuthorizationRequest(QTcpSocket *clientSocket, QString &login
     qDebug() << "Checking data to log in...";
     qDebug() << "login: " << login << ", password: " << password;
 
+    QString result, message;
+
     if(login.length() < 4 || password.length() < 4) {
-        sendAuthorizationResponse(clientSocket, "ILEN");
+        result = "ILEN"; // incorrect length
+    } else if (!isCorrectLogin(login) || !isCorrectPassword(password)) {
+        result = "ISYM"; // incorrect symbols
+        message = incorrectLoginSymbols + " /s " + incorrectPasswordSymbols;
     } else {
         int32_t userId = sqlitedb->findUser(login);
         qDebug() << "User ID in DB: " << userId;
         if (userId == -1) {
-            sendAuthorizationResponse(clientSocket, "NFND"); // not found
+            result = "NFND"; // not found
         } else if (!sqlitedb->checkPassword(userId, password)) {
-            sendAuthorizationResponse(clientSocket, "IPSW"); // incorrect password
+            result = "IPSW";// incorrect password
         } else {
             QString token = generateToken();
             qDebug() << "Generated token: " << token;
             sqlitedb->updateToken(userId, token, getConnectionTimeStamp());
-            sendAuthorizationResponse(clientSocket, "SCSS /s " + token);
+            result = "SCSS";
+            message = token;
             userIDToSocket[userId] = clientSocket;
             socketToUserID[clientSocket] = userId;
         }
     }
+    sendAuthorizationResponse(clientSocket, result, message);
 }
 
 void Server::sendContactListResponse(QTcpSocket *clientSocket, QString message)
@@ -298,6 +311,32 @@ bool Server::checkTimeStamp(QString timeStamp)
         QStringList splitClocksCTS = requestSeparation(clocksCTS, ":");
         QStringList splitClocksTS = requestSeparation(clocksTS, ":");
         if (std::abs(splitClocksCTS[0].toInt() - splitClocksTS[0].toInt()) <= 12) { // compare hours
+            return true;
+        }
+    }
+    return false;
+}
+
+bool Server::isCorrectLogin(QString login)
+{
+    for (QChar symbol: incorrectLoginSymbols) {
+        if (login.contains(symbol)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool Server::isCorrectPassword(QString password)
+{
+    for (QChar symbol: incorrectPasswordSymbols) {
+        if (password.contains(symbol)) {
+            return false;
+        }
+    }
+    // check if at least one non space symbol
+    for (QChar symbol: password) {
+        if (symbol != " ") {
             return true;
         }
     }
