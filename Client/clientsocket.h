@@ -31,6 +31,7 @@ public slots:
     void sendContactListRequest();
     void sendChatRequest(QString secondUser);
     void sendSendMessageRequest(QString secondUser, QString message);
+    void sendLogOutRequest();
 
 signals:
 

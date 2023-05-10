@@ -59,7 +59,8 @@ void Server::getRequest()
                          AUTHORIZATION_REQUEST,
                          CONTACT_LIST_REQUEST,
                          MESSAGE_LIST_REQUEST,
-                         SEND_MESSAGE_REQUEST
+                         SEND_MESSAGE_REQUEST,
+                         LOG_OUT_REQUEST
                        };
     COMMAND command = COMMAND::NONE;
 
@@ -75,6 +76,8 @@ void Server::getRequest()
         command = COMMAND::MESSAGE_LIST_REQUEST;
     } else if (packetType == "MSSG") {
         command = COMMAND::SEND_MESSAGE_REQUEST;
+    } else if (packetType == "LOGO") {
+        command = COMMAND::LOG_OUT_REQUEST;
     }
 
     switch (command)
@@ -119,6 +122,13 @@ void Server::getRequest()
             qDebug() << "SEND_MESSAGE_REQUEST: " << splitWords;
             handleSendMessageRequest(clientSocket, splitWords[0], splitWords[1], splitWords[2],
                                         splitWords[3]);
+            break;
+        }
+
+        case COMMAND::LOG_OUT_REQUEST:
+        {
+            qDebug() << "LOG_OUT_REQUEST from user: " << socketToUserID[clientSocket];
+            handleLogOutRequest(clientSocket);
             break;
         }
     }
@@ -266,6 +276,27 @@ void Server::handleSendMessageRequest(QTcpSocket *clientSocket, QString sender,
                                     receiver, timestamp);
         }
     }
+}
+
+void Server::sendLogOutResponse(QTcpSocket *clientSocket, QString result)
+{
+    QString response = "LOGO";
+    response.append(result);
+    clientSocket->write(response.toUtf8());
+}
+
+void Server::handleLogOutRequest(QTcpSocket *clientSocket)
+{
+    QString result;
+    if (socketToUserID.find(clientSocket) != socketToUserID.end()) {
+        uint32_t id = socketToUserID[clientSocket];
+        socketToUserID.remove(clientSocket);
+        userIDToSocket.remove(id);
+        result = "SCSS";
+    } else {
+        result = "FAIL";
+    }
+    sendLogOutResponse(clientSocket, result);
 }
 
 QString Server::getConnectionTimeStamp()

@@ -41,6 +41,7 @@ public:
     void handleChat(QString result, QList<QString>& fromUser, QList<QString>& toUser,
                     QList<QString>& text, QList<QString>& timestamp);
     void handleSendMessage(QStringList result);
+    void handleLogOut(QString result);
 
 private slots:
     void setRegistrationWidget();

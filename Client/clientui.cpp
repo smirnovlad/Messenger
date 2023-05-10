@@ -78,8 +78,8 @@ void ClientUI::setUserListWidget()
     this->clearLayout();
     UserList *contactListWidget = new UserList(this);
 
-    connect(contactListWidget->ui->logoutButton, SIGNAL(clicked()), this,
-            SLOT(setAuthorizationWidget()));
+    connect(contactListWidget->ui->logoutButton, SIGNAL(clicked()), this->client->clientSocket,
+            SLOT(sendLogOutRequest()));
     connect(contactListWidget->ui->userList, SIGNAL(itemClicked(QListWidgetItem*)), this,
             SLOT(sendChatRequest(QListWidgetItem*)));
 
@@ -137,7 +137,7 @@ void ClientUI::handleAuthorization(QStringList result)
     } else if (result[0] == "SCSS") {
         // qDebug() << "Generated token: " << result[1];
         client->saveToken(result[1]);
-        QMessageBox::information(this, "Authorization success", "You are loged in");
+        QMessageBox::information(this, "Authorization success", "You are logged in");
         this->setUserListWidget();
     }
 }
@@ -211,7 +211,16 @@ void ClientUI::handleSendMessage(QStringList result)
 
 void ClientUI::handleIncorrectToken()
 {
-    client->userLogin = "";
     QMessageBox::warning(this, "Request failed", "Incorrect token. Please log in.");
-    this->setAuthorizationWidget();
+    this->client->clientSocket->sendLogOutRequest();
+}
+
+void ClientUI::handleLogOut(QString result)
+{
+    if (result == "SCSS") {
+        client->userLogin = "";
+        setAuthorizationWidget();
+    } else if (result == "FAIL") {
+        QMessageBox::warning(this, "Log out failed", "Internal error. You are still logged in");
+    }
 }

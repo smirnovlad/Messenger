@@ -39,7 +39,8 @@ void ClientSocket::getResponse()
                          AUTHORIZATION_RESPONSE,
                          CONTACT_LIST_RESPONSE,
                          MESSAGE_LIST_RESPONSE,
-                         SEND_MESSAGE_RESPONSE
+                         SEND_MESSAGE_RESPONSE,
+                         LOG_OUT_RESPONSE
                        };
     COMMAND command = COMMAND::NONE;
 
@@ -53,6 +54,8 @@ void ClientSocket::getResponse()
         command = COMMAND::MESSAGE_LIST_RESPONSE;
     } else if (packetType == "MSSG") {
         command = COMMAND::SEND_MESSAGE_RESPONSE;
+    } else if (packetType == "LOGO") {
+        command = COMMAND::LOG_OUT_RESPONSE;
     }
 
     switch (command)
@@ -110,6 +113,13 @@ void ClientSocket::getResponse()
             client->clientUI->handleSendMessage(splitWords);
             break;
         }
+
+        case COMMAND::LOG_OUT_RESPONSE:
+        {
+            qDebug() << "Log out response: " << message;
+            client->clientUI->handleLogOut(message);
+            break;
+        }
     }
 }
 
@@ -157,5 +167,12 @@ void ClientSocket::sendSendMessageRequest(QString secondUser, QString message)
     QString request = "MSSG";
     request.append(QString("%1 /s %2 /s %3 /s %4").arg(client->userLogin).arg(secondUser)
                                                     .arg(message).arg(client->getToken()));
+    tcpSocket->write(request.toUtf8());
+}
+
+void ClientSocket::sendLogOutRequest()
+{
+    qDebug() << "Log out requested from user: " << client->userLogin;
+    QString request = "LOGO"; // log out
     tcpSocket->write(request.toUtf8());
 }

@@ -59,6 +59,9 @@ private:
     void sendSendMessageResponse(QTcpSocket *clientSocket, QString result, QString message,
                                  QString firstUser, QString secondUser, QString timestamp);
 
+    void handleLogOutRequest(QTcpSocket *clientSocket);
+    void sendLogOutResponse(QTcpSocket *clientSocket, QString result);
+
 private slots:
     void handleConnectionRequest();
     void handleDisconnection();
