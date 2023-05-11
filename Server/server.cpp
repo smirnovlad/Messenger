@@ -35,7 +35,12 @@ void Server::handleDisconnection()
     QTcpSocket *clientSocket = static_cast<QTcpSocket *>(QObject::sender());
     uint32_t id = socketToUserID[clientSocket];
     socketToUserID.remove(clientSocket);
-    userIDToSocket.remove(id);
+    auto it = userIDToSocket.find(id, clientSocket);
+    if (it != userIDToSocket.end()) {
+        userIDToSocket.erase(it);
+    } else {
+        qDebug() << "Error while disconnecting socket";
+    }
 }
 
 QStringList Server::requestSeparation(QString text, QString sep)
@@ -194,7 +199,7 @@ void Server::handleAuthorizationRequest(QTcpSocket *clientSocket, QString &login
             sqlitedb->updateToken(userId, token, getConnectionTimeStamp());
             result = "SCSS";
             message = token + " /s " + login;
-            userIDToSocket[userId] = clientSocket;
+            userIDToSocket.insert(userId, clientSocket);
             socketToUserID[clientSocket] = userId;
         }
     }
@@ -269,8 +274,9 @@ void Server::handleSendMessageRequest(QTcpSocket *clientSocket, QString sender,
                             receiver, timestamp);
     if (result == "SCSS") {
         uint32_t secondUserID = sqlitedb->findUser(receiver);
-        if (userIDToSocket.find(secondUserID) != userIDToSocket.end()) {
-            sendSendMessageResponse(userIDToSocket[secondUserID], result, message, sender,
+        auto secondUserSockets = userIDToSocket.equal_range(secondUserID);
+        for (auto it = secondUserSockets.first; it != secondUserSockets.second; ++it) {
+            sendSendMessageResponse(it.value(), result, message, sender,
                                     receiver, timestamp);
         }
     }
@@ -289,7 +295,12 @@ void Server::handleLogOutRequest(QTcpSocket *clientSocket)
     if (socketToUserID.find(clientSocket) != socketToUserID.end()) {
         uint32_t id = socketToUserID[clientSocket];
         socketToUserID.remove(clientSocket);
-        userIDToSocket.remove(id);
+        auto it = userIDToSocket.find(id, clientSocket);
+        if (it != userIDToSocket.end()) {
+            userIDToSocket.erase(it);
+        } else {
+            qDebug() << "Error while log out";
+        }
         result = "SCSS";
     } else {
         result = "FAIL";

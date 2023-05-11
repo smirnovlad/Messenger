@@ -184,7 +184,9 @@ void ClientUI::handleSendMessage(QStringList result)
         QLayoutItem *activeItem = getActiveItem();
         if (sender == client->userLogin) {
             Chat* chatWidget = static_cast<Chat*>(activeItem->widget());
-            chatWidget->sendMessage(timestamp);
+            chatWidget->sendMessage(message, timestamp);
+            // one user can be logged in from different sockets simultaneously
+            // so we need to pass message
             // QMessageBox::information(this, "Sending success", "Message was sent.");
         } else {
             Chat* chatWidget = dynamic_cast<Chat*>(activeItem->widget());

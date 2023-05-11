@@ -54,11 +54,10 @@ void Chat::sendMessage()
     }
 }
 
-void Chat::sendMessage(QString timestamp)
+void Chat::sendMessage(QString message, QString timestamp)
 {
     Message* messageWidget = new Message(this);
 
-    QString message = ui->lineEdit->text();
     messageWidget->ui->messageFromLabel->setText(message);
     messageWidget->ui->messageToLabel->setText("");
     messageWidget->ui->timestampFromLabel->setText(timestamp);
