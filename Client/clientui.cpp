@@ -109,7 +109,7 @@ void ClientUI::handleRegistration(QStringList result)
     } else if (result[0] == "ALRD") {
         QMessageBox::warning(this, "Registration failed", "You have been already registered.");
     } else if (result[0] == "ISYM") {
-        QMessageBox::warning(this, "Registration failed", "You can nott use these symbols for login:\n" +
+        QMessageBox::warning(this, "Registration failed", "You can not use these symbols for login:\n" +
                              result[1] + "\nYou can not youse these symbols for password:\n" +
                             result[2] + "\nPassword must contain at least one non-space symbol.");
     } else if (result[0] == "SCSS") {
@@ -232,8 +232,10 @@ void ClientUI::handleConnectionError(QStringList request)
         }
     }
     if (request[0] == "CHAT") {
-        setChatWidget(request[1]);
+        client->clientSocket->sendChatRequest(request[1]);
     } else if (request[0] == "CTCS") {
         setUserListWidget();
+    } else if (request[0] == "MSSG") {
+        client->clientSocket->sendSendMessageRequest(request[1], request[2]);
     }
 }
