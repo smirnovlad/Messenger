@@ -270,12 +270,17 @@ void Server::handleSendMessageRequest(QTcpSocket *clientSocket, QString sender,
     } else {
         result = "ITKN"; // incorrect token
     }
-    sendSendMessageResponse(clientSocket, result, message, sender,
-                            receiver, timestamp);
+
+    uint32_t senderUserId = sqlitedb->findUser(sender);
+    auto senderUserSockets = userIDToSocket.equal_range(senderUserId);
+    for (auto it = senderUserSockets.first; it != senderUserSockets.second; ++it) {
+        sendSendMessageResponse(it.value(), result, message, sender,
+                                receiver, timestamp);
+    }
     if (result == "SCSS") {
-        uint32_t secondUserID = sqlitedb->findUser(receiver);
-        auto secondUserSockets = userIDToSocket.equal_range(secondUserID);
-        for (auto it = secondUserSockets.first; it != secondUserSockets.second; ++it) {
+        uint32_t receiverUserId = sqlitedb->findUser(receiver);
+        auto receiverUserSockets = userIDToSocket.equal_range(receiverUserId);
+        for (auto it = receiverUserSockets.first; it != receiverUserSockets.second; ++it) {
             sendSendMessageResponse(it.value(), result, message, sender,
                                     receiver, timestamp);
         }
