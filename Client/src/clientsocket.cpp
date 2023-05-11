@@ -1,4 +1,4 @@
-#include "clientsocket.h"
+#include "inc/clientsocket.h"
 
 ClientSocket::ClientSocket(QObject *parent, Client* client)
     : QObject(parent)

@@ -1,4 +1,4 @@
-#include "message.h"
+#include "inc/message.h"
 #include "ui_message.h"
 
 Message::Message(QWidget *parent) :

@@ -1,4 +1,4 @@
-#include "registration.h"
+#include "inc/registration.h"
 #include "ui_registration.h"
 
 #include <QDebug>

@@ -1,4 +1,4 @@
-#include "sqlitedb.h"
+#include "inc/sqlitedb.h"
 
 #include <QDir>
 
@@ -8,7 +8,7 @@ SQLiteDB::SQLiteDB(QObject *parent) : QObject(parent)
 
     qDebug() << "Current directory: " << QDir::currentPath();
 
-    QString pathToDB = QString(QDir::currentPath() + "/../Server/MessengerDB");
+    QString pathToDB = QString(QDir::currentPath() + "/../MessengerDB");
     DB.setDatabaseName(pathToDB);
 
     QFileInfo checkFile(pathToDB);

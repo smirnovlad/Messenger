@@ -8,84 +8,50 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STAcNDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+conan_basic_setup()
+
 find_package(QT NAMES Qt5 COMPONENTS Widgets Core Gui Sql Network REQUIRED)
-find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Widgets Core Gui Sql Network REQUIRED)
+find_package(Qt5 COMPONENTS Widgets Core Gui Sql Network REQUIRED)
 
 set(PROJECT_SOURCES
-        registration.cpp
-        authorization.cpp
-        user.cpp
-        userlist.cpp
-        chat.cpp
-        message.cpp
-        clientsocket.cpp
-        clientui.cpp
-        client.cpp
-        main.cpp
+        src/registration.cpp
+        src/authorization.cpp
+        src/user.cpp
+        src/userlist.cpp
+        src/chat.cpp
+        src/message.cpp
+        src/clientsocket.cpp
+        src/clientui.cpp
+        src/client.cpp
+        src/main.cpp
 )
 
 set(PROJECT_HEADERS
-        client.h
-        registration.h
-        authorization.h
-        user.h
-        userlist.h
-        chat.h
-        message.h
-        clientsocket.h
-        clientui.h
+        inc/client.h
+        inc/registration.h
+        inc/authorization.h
+        inc/user.h
+        inc/userlist.h
+        inc/chat.h
+        inc/message.h
+        inc/clientsocket.h
+        inc/clientui.h
 )
 
 set(PROJECT_UI
-    client.ui
-    registration.ui
-    authorization.ui
-    user.ui
-    userlist.ui
-    chat.ui
-    message.ui
-    clientui.ui
+        src/client.ui
+        src/registration.ui
+        src/authorization.ui
+        src/user.ui
+        src/userlist.ui
+        src/chat.ui
+        src/message.ui
+        src/clientui.ui
 )
 
-if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
-    qt_add_executable(Client
-        MANUAL_FINALIZATION
-        ${PROJECT_SOURCES}
-        ${PROJECT_HEADERS}
-    )
-# Define target properties for Android with Qt 6 as:
-#    set_property(TARGET Client APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
-#                 ${CMAKE_CURRENT_SOURCE_DIR}/android)
-# For more information, see https://doc.qt.io/qt-6/qt-add-executable.html#target-creation
-else()
-    if(ANDROID)
-        add_library(Client SHARED
-            ${PROJECT_SOURCES}
-            ${PROJECT_HEADERS}
-            ${PROJECT_UI}
-        )
-# Define properties for Android with Qt 5 after find_package() calls as:
-#    set(ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/android")
-    else()
-        add_executable(Client
-            ${PROJECT_SOURCES}
-            ${PROJECT_HEADERS}
-            ${PROJECT_UI}
-        )
-    endif()
-endif()
-
-target_link_libraries(Client PRIVATE Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Core Qt${QT_VERSION_MAJOR}::Gui Qt${QT_VERSION_MAJOR}::Sql Qt${QT_VERSION_MAJOR}::Network)
-
-set_target_properties(Client PROPERTIES
-    MACOSX_BUNDLE_GUI_IDENTIFIER my.example.com
-    MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
-    MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
-)
-
-if(QT_VERSION_MAJOR EQUAL 6)
-    qt_finalize_executable(Client)
-endif()
+add_executable(Client ${PROJECT_SOURCES} ${PROJECT_HEADERS} ${PROJECT_UI})
+target_link_libraries(Client PRIVATE Qt5::Widgets Qt5::Core Qt5::Gui Qt5::Sql Qt5::Network)

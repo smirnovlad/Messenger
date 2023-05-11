@@ -1,4 +1,4 @@
-#include "user.h"
+#include "inc/user.h"
 #include "ui_user.h"
 
 User::User(QWidget *parent) :

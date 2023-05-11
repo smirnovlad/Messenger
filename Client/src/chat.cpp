@@ -1,6 +1,6 @@
-#include "chat.h"
+#include "inc/chat.h"
 #include "./ui_chat.h"
-#include "message.h"
+#include "inc/message.h"
 #include "./ui_message.h"
 
 #include <QDebug>

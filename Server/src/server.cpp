@@ -1,4 +1,4 @@
-#include "server.h"
+#include "inc/server.h"
 
 #include <QDir>
 #include <random>

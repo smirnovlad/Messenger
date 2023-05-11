@@ -1,6 +1,6 @@
-#include "authorization.h"
+#include "inc/authorization.h"
 #include "ui_authorization.h"
-#include "registration.h"
+#include "inc/registration.h"
 #include "ui_registration.h"
 
 Authorization::Authorization(QWidget *parent)

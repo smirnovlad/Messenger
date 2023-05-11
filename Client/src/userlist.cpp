@@ -1,6 +1,6 @@
-#include "userlist.h"
+#include "inc/userlist.h"
 #include "./ui_userlist.h"
-#include "user.h"
+#include "inc/user.h"
 #include "./ui_user.h"
 
 #include <QListWidget>

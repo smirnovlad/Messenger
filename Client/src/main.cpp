@@ -1,10 +1,11 @@
-#include "server.h"
+#include "inc/clientui.h"
 
 #include <QApplication>
+#include "inc/authorization.h"
 
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    Server w;
+    Client client;
     return a.exec();
 }
