@@ -8,7 +8,7 @@ SQLiteDB::SQLiteDB(QObject *parent) : QObject(parent)
 
     qDebug() << "Current directory: " << QDir::currentPath();
 
-    QString pathToDB = QString(QDir::currentPath() + "/../MessengerDB");
+    QString pathToDB = QString(QDir::currentPath() + "/../../MessengerDB");
     DB.setDatabaseName(pathToDB);
 
     QFileInfo checkFile(pathToDB);
@@ -81,6 +81,8 @@ int32_t SQLiteDB::addUser(QString login, QString password)
             return query.value(0).toInt();
         }
     }
+    qDebug() << "Bad query while getting new user id.";
+    return -1;
 }
 
 void SQLiteDB::getContactList(QString& contactList)
@@ -95,7 +97,6 @@ void SQLiteDB::getContactList(QString& contactList)
         }
         return;
     }
-    qDebug() << "Bad query";
 }
 
 void SQLiteDB::getMessageList(QString &messageList, QString firstUser, QString secondUser)

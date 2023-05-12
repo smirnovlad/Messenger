@@ -22,7 +22,6 @@ public:
 
 public:
     Ui::Authorization *ui;
-    Registration *registrationWindow;
 
 private slots:
     void log_in();

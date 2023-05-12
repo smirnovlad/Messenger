@@ -6,7 +6,6 @@
 
 Server::Server(QObject *parent)
     : QObject(parent)
-    , nextBlockSize(0)
 {
     sqlitedb = new SQLiteDB;
     tcpServer = new QTcpServer(this);
@@ -272,6 +271,11 @@ void Server::handleSendMessageRequest(QTcpSocket *clientSocket, QString sender,
     }
 
     uint32_t senderUserId = sqlitedb->findUser(sender);
+
+    // We need to do it, because at moment of request processing
+    // userIDToSocket can be empty, if server was shut down
+    userIDToSocket.insert(senderUserId, clientSocket);
+
     auto senderUserSockets = userIDToSocket.equal_range(senderUserId);
     for (auto it = senderUserSockets.first; it != senderUserSockets.second; ++it) {
         sendSendMessageResponse(it.value(), result, message, sender,
@@ -304,6 +308,8 @@ void Server::handleLogOutRequest(QTcpSocket *clientSocket)
         if (it != userIDToSocket.end()) {
             userIDToSocket.erase(it);
         } else {
+            // It can occur in case of
+            // disconnected server and further reconnect to server
             qDebug() << "Error while log out";
         }
         result = "SCSS";

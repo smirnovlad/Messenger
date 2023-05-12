@@ -11,10 +11,13 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STAcNDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+#set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address")
+
+#list(APPEND CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR})
+
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 conan_basic_setup()
 
-find_package(QT NAMES Qt5 COMPONENTS Widgets Core Gui Sql Network REQUIRED)
 find_package(Qt5 COMPONENTS Widgets Core Gui Sql Network REQUIRED)
 
 set(PROJECT_SOURCES

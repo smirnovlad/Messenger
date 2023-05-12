@@ -82,6 +82,8 @@ void ClientSocket::getResponse()
             QList< QPair<QString, QString> > contactList;
             QStringList splitWords = requestSeparation(message, " /n ");
             QString result = splitWords[0];
+            // if result is not "SCSS", splitWords[1] = ""
+            // is result is "SCSS", splitWords[1] also can be empty
             if (splitWords[1] != "") {
               for (uint32_t i = 1; i < splitWords.size(); ++i) {
                 QStringList pair = requestSeparation(splitWords[i], " /s ");

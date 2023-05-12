@@ -6,7 +6,6 @@
 Authorization::Authorization(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::Authorization)
-    , registrationWindow(nullptr)
 {
     ui->setupUi(this);
     this->setWindowTitle("Authorization");

@@ -24,6 +24,9 @@ ClientUI::ClientUI(QWidget *parent, Client* client)
     ui->setupUi(this);
     this->setAuthorizationWidget();
     this->show();
+
+    connect(this, SIGNAL(getChatWidget(QString)), this, SLOT(setChatWidget(QString)));
+
 }
 
 ClientUI::~ClientUI()
@@ -33,11 +36,12 @@ ClientUI::~ClientUI()
 
 void ClientUI::clearLayout()
 {
-    QLayoutItem *activeItem = ui->contentWidget->layout()->takeAt(0);
+    QLayoutItem *activeItem = ui->contentWidget->layout()->itemAt(0);
     if (activeItem != NULL) {
         delete activeItem->widget();
-        delete activeItem;
+        //delete activeItem;
     }
+    qDebug() << "Layout items count: " << ui->contentWidget->layout()->count();
 }
 
 QLayoutItem* ClientUI::getActiveItem() {
@@ -80,7 +84,7 @@ void ClientUI::setUserListWidget()
 
     connect(contactListWidget->ui->logoutButton, SIGNAL(clicked()), this->client->clientSocket,
             SLOT(sendLogOutRequest()));
-    connect(contactListWidget->ui->userList, SIGNAL(itemClicked(QListWidgetItem*)), this,
+    connect(contactListWidget->ui->userList, SIGNAL(itemPressed(QListWidgetItem*)), this,
             SLOT(sendChatRequest(QListWidgetItem*)));
 
     ui->contentWidget->layout()->addWidget(contactListWidget);
@@ -90,16 +94,18 @@ void ClientUI::setUserListWidget()
 void ClientUI::setChatWidget(QString name)
 {
     qDebug() << "Switched to chat";
-    this->clearLayout();
+//    this->clearLayout();
+    ui->setupUi(this);
     Chat *chatWidget = new Chat(this);
+//    ui->contentWidget->layout()->deleteLater();
     chatWidget->ui->userNameLabel->setText(name);
-
     connect(chatWidget->ui->backButton, SIGNAL(clicked()), this,
-            SLOT(setUserListWidget()));
+              SLOT(setUserListWidget()));
     connect(chatWidget, SIGNAL(sendMessageRequest(QString, QString)), this->client->clientSocket,
-            SLOT(sendSendMessageRequest(QString, QString)));
+              SLOT(sendSendMessageRequest(QString, QString)));
 
     ui->contentWidget->layout()->addWidget(chatWidget);
+    this->client->clientSocket->sendChatRequest(name);
 }
 
 void ClientUI::handleRegistration(QStringList result)
@@ -168,11 +174,8 @@ void ClientUI::sendChatRequest(QListWidgetItem* contact)
     QLayoutItem *activeItem = getActiveItem();
     QListWidget *userListWidget = static_cast<UserList*>(activeItem->widget())->ui->userList;
     User *userWidget = static_cast<User*>(userListWidget->itemWidget(contact));
-    // qDebug() << "id: " << userWidget->ui->IDLabel->text();
     QString secondUser = userWidget->ui->loginLabel->text();
-    qDebug() << "secondUser: " << secondUser;
     this->setChatWidget(secondUser);
-    client->clientSocket->sendChatRequest(secondUser);
 }
 
 void ClientUI::handleSendMessage(QStringList result)

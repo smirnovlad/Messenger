@@ -26,7 +26,6 @@ private:
     Client *client;
     Ui::ClientUI *ui;
     QWidget *activeLayout;
-    // Authorization *authorizationWindow;
 
 private:
     void clearLayout();
@@ -50,5 +49,7 @@ private slots:
     void setUserListWidget();
     void setChatWidget(QString name);
     void sendChatRequest(QListWidgetItem* contact);
+signals:
+    void getChatWidget(QString name);
 };
 #endif // CLIENTUI_H

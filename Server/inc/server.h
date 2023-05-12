@@ -11,7 +11,6 @@
 #include <QPair>
 
 #include "sqlitedb.h"
-#include "user.h"
 
 class Server : public QObject
 {
@@ -30,12 +29,12 @@ private:
     QString incorrectLoginSymbols = "_' ,.!@#$%^&*()<>+=-/|~`\"";
     QString incorrectPasswordSymbols = "/";
 
-    quint32 nextBlockSize;
-
     QString getConnectionTimeStamp();
     QString generateToken();
     bool checkToken(QTcpSocket *clientSocket, QString token);
     bool checkTimeStamp(QString timeStamp);
+
+    QStringList requestSeparation(QString text, QString sep);
 
     bool isCorrectLogin(QString login);
     bool isCorrectPassword(QString password);
@@ -66,7 +65,5 @@ private slots:
     void handleConnectionRequest();
     void handleDisconnection();
     void getRequest();
-
-    QStringList requestSeparation(QString text, QString sep);
 };
 #endif // SERVER_H
