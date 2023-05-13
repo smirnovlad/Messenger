@@ -272,16 +272,20 @@ void Server::handleSendMessageRequest(QTcpSocket *clientSocket, QString sender,
 
     uint32_t senderUserId = sqlitedb->findUser(sender);
 
-    // We need to do it, because at moment of request processing
-    // userIDToSocket can be empty, if server was shut down
-    userIDToSocket.insert(senderUserId, clientSocket);
+    // at moment of request processing userIDToSocket can be empty,
+    // if server was shut down
+    if (userIDToSocket.find(senderUserId, clientSocket) == userIDToSocket.end()) {
+      userIDToSocket.insert(senderUserId, clientSocket);
+    }
 
     auto senderUserSockets = userIDToSocket.equal_range(senderUserId);
+    qDebug() << "Sender user sockets count: " << userIDToSocket.count(senderUserId);
     for (auto it = senderUserSockets.first; it != senderUserSockets.second; ++it) {
+        qDebug() << "Socket = " << it.value();
         sendSendMessageResponse(it.value(), result, message, sender,
                                 receiver, timestamp);
     }
-    if (result == "SCSS") {
+    if (result == "SCSS" && sender != receiver) {
         uint32_t receiverUserId = sqlitedb->findUser(receiver);
         auto receiverUserSockets = userIDToSocket.equal_range(receiverUserId);
         for (auto it = receiverUserSockets.first; it != receiverUserSockets.second; ++it) {

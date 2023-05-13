@@ -39,9 +39,9 @@ void ClientUI::clearLayout()
     QLayoutItem *activeItem = ui->contentWidget->layout()->itemAt(0);
     if (activeItem != NULL) {
         delete activeItem->widget();
-        //delete activeItem;
+        // delete activeItem;
     }
-    qDebug() << "Layout items count: " << ui->contentWidget->layout()->count();
+//    qDebug() << "Layout items count: " << ui->contentWidget->layout()->count();
 }
 
 QLayoutItem* ClientUI::getActiveItem() {
@@ -181,19 +181,22 @@ void ClientUI::sendChatRequest(QListWidgetItem* contact)
 void ClientUI::handleSendMessage(QStringList result)
 {
     QString sender = result[2];
+    QString receiver = result[3];
     if (result[0] == "SCSS") {
         QString message = result[1];
         QString timestamp = result[4];
         QLayoutItem *activeItem = getActiveItem();
         if (sender == client->userLogin) {
             Chat* chatWidget = static_cast<Chat*>(activeItem->widget());
-            chatWidget->sendMessage(message, timestamp);
+            if (chatWidget->ui->userNameLabel->text() == receiver) {
+              chatWidget->sendMessage(message, timestamp);
+            }
             // one user can be logged in from different sockets simultaneously
             // so we need to pass message
             // QMessageBox::information(this, "Sending success", "Message was sent.");
         } else {
             Chat* chatWidget = dynamic_cast<Chat*>(activeItem->widget());
-            if (chatWidget != nullptr) {
+            if (chatWidget != nullptr && chatWidget->ui->userNameLabel->text() == sender) {
                 chatWidget->receiveMessage(message, timestamp);
                 // QMessageBox::information(this, "Receiving success", "Message was received.");
             }
