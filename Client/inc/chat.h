@@ -22,7 +22,7 @@ public:
     void setMessageList(QList<QString> &fromUser, QList<QString> &toUser,
                         QList<QString> &text, QList<QString> &timestamp,
                         QString userName);
-    void sendMessage(QString message, QString timestamp);
+    void sendMessage(QString message, QString timestamp, bool clearEditLine);
     void receiveMessage(QString message, QString timestamp);
 
 private slots:

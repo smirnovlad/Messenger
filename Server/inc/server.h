@@ -56,7 +56,8 @@ private:
     void handleSendMessageRequest(QTcpSocket *clientSocket, QString sender, QString receiver,
                                   QString message, QString token);
     void sendSendMessageResponse(QTcpSocket *clientSocket, QString result, QString message,
-                                 QString firstUser, QString secondUser, QString timestamp);
+                                 QString firstUser, QString secondUser, QString timestamp,
+                                 bool toActualSender);
 
     void handleLogOutRequest(QTcpSocket *clientSocket);
     void sendLogOutResponse(QTcpSocket *clientSocket, QString result);

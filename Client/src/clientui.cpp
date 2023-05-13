@@ -185,11 +185,14 @@ void ClientUI::handleSendMessage(QStringList result)
     if (result[0] == "SCSS") {
         QString message = result[1];
         QString timestamp = result[4];
+        QString clearEditLine = result[5];
         QLayoutItem *activeItem = getActiveItem();
         if (sender == client->userLogin) {
+            // maybe use dynamic_cast and check if it is nullptr in case
+            // of user closed chat "very fast"
             Chat* chatWidget = static_cast<Chat*>(activeItem->widget());
             if (chatWidget->ui->userNameLabel->text() == receiver) {
-              chatWidget->sendMessage(message, timestamp);
+              chatWidget->sendMessage(message, timestamp, clearEditLine.toInt());
             }
             // one user can be logged in from different sockets simultaneously
             // so we need to pass message
@@ -223,8 +226,6 @@ void ClientUI::handleLogOut(QString result)
     if (result == "SCSS") {
         client->userLogin = "";
         setAuthorizationWidget();
-    } else if (result == "FAIL") {
-        QMessageBox::warning(this, "Log out failed", "Internal error. You are still logged in.");
     }
 }
 

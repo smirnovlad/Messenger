@@ -54,7 +54,7 @@ void Chat::sendMessage()
     }
 }
 
-void Chat::sendMessage(QString message, QString timestamp)
+void Chat::sendMessage(QString message, QString timestamp, bool clearEditLine)
 {
     Message* messageWidget = new Message(this);
 
@@ -68,7 +68,9 @@ void Chat::sendMessage(QString message, QString timestamp)
     ui->messageList->addItem(item);
     ui->messageList->setItemWidget(item, messageWidget);
 
-    ui->lineEdit->setText("");
+    if (clearEditLine) {
+      ui->lineEdit->setText("");
+    }
 
     ui->messageList->scrollToBottom();
 }
