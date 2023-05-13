@@ -3,13 +3,14 @@
 
 #include <QWidget>
 
-namespace Ui {
+namespace Ui
+{
 class Message;
 }
 
-class Message : public QWidget
+class Message: public QWidget
 {
-    Q_OBJECT
+Q_OBJECT
 
 public:
     explicit Message(QWidget *parent = nullptr);
@@ -17,6 +18,7 @@ public:
 
 public:
     Ui::Message *ui;
+    int32_t messageId = -1;
 };
 
 #endif // MESSAGE_H

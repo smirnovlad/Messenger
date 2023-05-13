@@ -57,10 +57,17 @@ private:
                                   QString message, QString token);
     void sendSendMessageResponse(QTcpSocket *clientSocket, QString result, QString message,
                                  QString firstUser, QString secondUser, QString timestamp,
-                                 bool toActualSender);
+                                 int32_t messageId, bool toActualSender);
 
     void handleLogOutRequest(QTcpSocket *clientSocket);
     void sendLogOutResponse(QTcpSocket *clientSocket, QString result);
+
+    void handleEditMessageRequest(QTcpSocket *clientSocket, QString sender, QString receiver,
+                                  int32_t messageId, QString editedMessage, int32_t messageChatIndex,
+                                  QString token);
+    void sendEditMessageResponse(QTcpSocket *clientSOcket, QString result,
+                                 QString sender, QString receiver,
+                                 QString editedMessage, int32_t messageChatIndex);
 
 private slots:
     void handleConnectionRequest();

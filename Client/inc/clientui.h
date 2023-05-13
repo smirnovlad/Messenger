@@ -9,17 +9,20 @@
 #include "authorization.h"
 
 QT_BEGIN_NAMESPACE
-namespace Ui { class ClientUI; }
+namespace Ui
+{
+class ClientUI;
+}
 QT_END_NAMESPACE
 
 class Client;
 
-class ClientUI : public QMainWindow
+class ClientUI: public QMainWindow
 {
-    Q_OBJECT
+Q_OBJECT
 
 public:
-    ClientUI(QWidget *parent = nullptr, Client* client = nullptr);
+    ClientUI(QWidget *parent = nullptr, Client *client = nullptr);
     ~ClientUI();
 
 private:
@@ -29,26 +32,27 @@ private:
 
 private:
     void clearLayout();
-    QLayoutItem* getActiveItem();
+    QLayoutItem *getActiveItem();
 
     void handleIncorrectToken();
 
 public:
     void handleRegistration(QStringList result);
     void handleAuthorization(QStringList result);
-    void handleContactList(QString result, const QList< QPair<QString, QString> >& contactList);
-    void handleChat(QString result, QList<QString>& fromUser, QList<QString>& toUser,
-                    QList<QString>& text, QList<QString>& timestamp);
+    void handleContactList(QString result, const QList<QPair<QString, QString> > &contactList);
+    void handleChat(QString result, QList<QString> &fromUser, QList<QString> &toUser,
+                    QList<QString> &text, QList<QString> &timestamp, QList<QString> &messageId);
     void handleSendMessage(QStringList result);
     void handleLogOut(QString result);
     void handleConnectionError(QStringList request);
+    void handleEditMessage(QStringList result);
 
 private slots:
     void setRegistrationWidget();
     void setAuthorizationWidget();
     void setUserListWidget();
     void setChatWidget(QString name);
-    void sendChatRequest(QListWidgetItem* contact);
+    void sendChatRequest(QListWidgetItem *contact);
 signals:
     void getChatWidget(QString name);
 };

@@ -114,7 +114,8 @@ void SQLiteDB::getMessageList(QString &messageList, QString firstUser, QString s
                 messageList.append(getLoginByID(query.value(1).toInt()) + " /s " +
                                    getLoginByID(query.value(2).toInt()) + " /s " +
                                    query.value(3).toString() + " /s " +
-                                   query.value(4).toString());
+                                   query.value(4).toString() + " /s " +
+                                   query.value(0).toString());
             }
             return;
         }
@@ -122,7 +123,8 @@ void SQLiteDB::getMessageList(QString &messageList, QString firstUser, QString s
     qDebug() << "Bad query while creating new chat table.";
 }
 
-void SQLiteDB::sendMessage(QString firstUser, QString secondUser, QString message, QString timestamp)
+void SQLiteDB::sendMessage(QString firstUser, QString secondUser, QString message, QString timestamp,
+                           int32_t& messageId)
 {
     QSqlQuery query(DB);
     QString chatName = "Chat_" + firstUser + "_" + secondUser;
@@ -149,9 +151,20 @@ void SQLiteDB::sendMessage(QString firstUser, QString secondUser, QString messag
         query.bindValue(":message", message);
         query.bindValue(":timestamp", timestamp);
         query.exec();
-    } else {
+        messageId = query.lastInsertId().toInt();
+      } else {
         qDebug() << "Bad query while creating chat table for second user.";
     }
+}
+
+void SQLiteDB::editMessage(QString firstUser, QString secondUser, int32_t messageId, QString editedMessage)
+{
+  QSqlQuery query(DB);
+  QString chatName = "Chat_" + firstUser + "_" + secondUser;
+  if (!query.exec("UPDATE " + chatName + " SET message='" + editedMessage +
+      "' WHERE id=" + QString::number(messageId))) {
+      qDebug() << "Bad query while updating message.";
+  }
 }
 
 void SQLiteDB::updateToken(int32_t userId, QString token, QString timestamp)

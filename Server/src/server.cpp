@@ -63,7 +63,8 @@ void Server::getRequest() {
     CONTACT_LIST_REQUEST,
     MESSAGE_LIST_REQUEST,
     SEND_MESSAGE_REQUEST,
-    LOG_OUT_REQUEST
+    LOG_OUT_REQUEST,
+    EDIT_MESSAGE_REQUEST
   };
   COMMAND command = COMMAND::NONE;
 
@@ -81,6 +82,8 @@ void Server::getRequest() {
     command = COMMAND::SEND_MESSAGE_REQUEST;
   } else if (packetType == "LOGO") {
     command = COMMAND::LOG_OUT_REQUEST;
+  } else if (packetType == "EMSG") {
+    command = COMMAND::EDIT_MESSAGE_REQUEST;
   }
 
   switch (command) {
@@ -130,6 +133,14 @@ void Server::getRequest() {
       }
       qDebug() << "LOG_OUT_REQUEST from user: " << userId;
       handleLogOutRequest(clientSocket);
+      break;
+    }
+
+    case COMMAND::EDIT_MESSAGE_REQUEST: {
+      QStringList splitWords = requestSeparation(clientSocket->readAll(), " /s ");
+      qDebug() << "EDIT_MESSAGE_REQUEST: " << splitWords;
+      handleEditMessageRequest(clientSocket, splitWords[0], splitWords[1], splitWords[2].toInt(),
+                               splitWords[3], splitWords[4].toInt(), splitWords[5]);
       break;
     }
   }
@@ -250,10 +261,11 @@ void Server::handleMessageListRequest(QTcpSocket *clientSocket, QString firstUse
 
 void Server::sendSendMessageResponse(QTcpSocket *clientSocket, QString result, QString message,
                                      QString sender, QString receiver, QString timestamp,
-                                     bool toActualSender) {
+                                     int32_t messageId, bool toActualSender) {
   QString response = "MSSG";
   response.append(result + " /s " + message + " /s " + sender + " /s " +
-      receiver + " /s " + timestamp + " /s " + QString::number(toActualSender));
+      receiver + " /s " + timestamp + " /s " + QString::number(messageId) +
+      " /s " + QString::number(toActualSender));
   clientSocket->write(response.toUtf8());
 }
 
@@ -261,8 +273,9 @@ void Server::handleSendMessageRequest(QTcpSocket *clientSocket, QString sender,
                                       QString receiver, QString message, QString token) {
   QString result;
   QString timestamp = getConnectionTimeStamp();
+  int32_t messageId = -1;
   if (checkToken(clientSocket, token)) {
-    sqlitedb->sendMessage(sender, receiver, message, timestamp);
+    sqlitedb->sendMessage(sender, receiver, message, timestamp, messageId);
     result = "SCSS";
   } else {
     result = "ITKN"; // incorrect token
@@ -274,7 +287,7 @@ void Server::handleSendMessageRequest(QTcpSocket *clientSocket, QString sender,
     //    if server was shut down.
     // 2) The token could also expire
     sendSendMessageResponse(clientSocket, result, message, sender,
-                            receiver, timestamp, true);
+                            receiver, timestamp, messageId, true);
     return;
   }
 
@@ -286,10 +299,10 @@ void Server::handleSendMessageRequest(QTcpSocket *clientSocket, QString sender,
   for (auto it = senderUserSockets.first; it != senderUserSockets.second; ++it) {
     if (it.value() == clientSocket) {
       sendSendMessageResponse(it.value(), result, message, sender,
-                              receiver, timestamp, true);
+                              receiver, timestamp, messageId, true);
     } else {
       sendSendMessageResponse(it.value(), result, message, sender,
-                              receiver, timestamp, false);
+                              receiver, timestamp, messageId, false);
     }
   }
   if (sender != receiver) {
@@ -298,7 +311,7 @@ void Server::handleSendMessageRequest(QTcpSocket *clientSocket, QString sender,
     auto receiverUserSockets = userIDToSocket.equal_range(receiverUserId);
     for (auto it = receiverUserSockets.first; it != receiverUserSockets.second; ++it) {
       sendSendMessageResponse(it.value(), result, message, sender,
-                              receiver, timestamp, false);
+                              receiver, timestamp, messageId, false);
     }
   }
 }
@@ -329,6 +342,60 @@ void Server::handleLogOutRequest(QTcpSocket *clientSocket) {
   }
   result = "SCSS";
   sendLogOutResponse(clientSocket, result);
+}
+
+void Server::sendEditMessageResponse(QTcpSocket *clientSOcket,
+                                     QString result,
+                                     QString sender,
+                                     QString receiver,
+                                     QString editedMessage,
+                                     int32_t messageChatIndex) {
+  QString response = "EMSG";
+  response.append(result + " /s " + sender + " /s " + receiver + " /s " +
+                  editedMessage + " /s " + QString::number(messageChatIndex));
+  clientSOcket->write(response.toUtf8());
+}
+
+void Server::handleEditMessageRequest(QTcpSocket *clientSocket,
+                                      QString sender,
+                                      QString receiver,
+                                      int32_t messageId,
+                                      QString editedMessage,
+                                      int32_t messageChatIndex,
+                                      QString token)
+{
+  QString result;
+  if (checkToken(clientSocket, token)) {
+    sqlitedb->editMessage(sender, receiver, messageId, editedMessage);
+    sqlitedb->editMessage(receiver, sender, messageId, editedMessage);
+    result = "SCSS";
+  } else {
+    result = "ITKN"; // incorrect token
+  }
+
+  if (result == "ITKN") {
+    sendEditMessageResponse(clientSocket, result, sender,
+                            receiver, editedMessage, messageChatIndex);
+    return;
+  }
+
+  uint32_t senderUserId = sqlitedb->findUser(sender);
+  auto senderUserSockets = userIDToSocket.equal_range(senderUserId);
+  qDebug() << "Actual sender clientSocket: " << clientSocket;
+  qDebug() << "Sender user sockets count: " << userIDToSocket.count(senderUserId);
+  for (auto it = senderUserSockets.first; it != senderUserSockets.second; ++it) {
+    sendEditMessageResponse(it.value(), result, sender, receiver,
+                            editedMessage, messageChatIndex);
+  }
+  if (sender != receiver) {
+    uint32_t receiverUserId = sqlitedb->findUser(receiver);
+    qDebug() << "Receiver user sockets count: " << userIDToSocket.count(receiverUserId);
+    auto receiverUserSockets = userIDToSocket.equal_range(receiverUserId);
+    for (auto it = receiverUserSockets.first; it != receiverUserSockets.second; ++it) {
+      sendEditMessageResponse(it.value(), result, sender, receiver,
+                              editedMessage, messageChatIndex);
+    }
+  }
 }
 
 QString Server::getConnectionTimeStamp() {

@@ -8,11 +8,11 @@
 
 class Client;
 
-class ClientSocket : public QObject
+class ClientSocket: public QObject
 {
-    Q_OBJECT
+Q_OBJECT
 public:
-    explicit ClientSocket(QObject *parent = nullptr, Client* client = nullptr);
+    explicit ClientSocket(QObject *parent = nullptr, Client *client = nullptr);
 
 private:
     Client *client;
@@ -33,6 +33,8 @@ public slots:
     void sendChatRequest(QString secondUser);
     void sendSendMessageRequest(QString secondUser, QString message);
     void sendLogOutRequest();
+    void sendEditMessageRequest(QString receiver, int32_t messageId, QString editedMessage,
+                                int32_t messageChatIndex);
 
 signals:
 
