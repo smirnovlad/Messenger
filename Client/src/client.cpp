@@ -26,7 +26,6 @@ void Client::saveToken(QString token)
 QString Client::getToken()
 {
     QString tokenFileName = userLogin + "_token";
-    qDebug() << QDir::currentPath();
     QString pathToToken = QString(QDir::currentPath() + "/../../token/" + tokenFileName);
     QFile file;
     file.setFileName(pathToToken);

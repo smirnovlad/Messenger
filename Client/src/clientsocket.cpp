@@ -194,7 +194,7 @@ void ClientSocket::sendChatRequest(QString secondUser)
         request.append(QString("%1 /s %2 /s %3").arg(client->userLogin).arg(secondUser)
                                             .arg(client->getToken()));
         tcpSocket->write(request.toUtf8());
-        qDebug() << "Written in socket";
+//        qDebug() << "Written in socket";
     }
 }
 

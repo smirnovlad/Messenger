@@ -25,7 +25,8 @@ ClientUI::ClientUI(QWidget *parent, Client* client)
     this->setAuthorizationWidget();
     this->show();
 
-    connect(this, SIGNAL(getChatWidget(QString)), this, SLOT(setChatWidget(QString)));
+    connect(this, SIGNAL(getChatWidget(QString)), this, SLOT(setChatWidget(QString)),
+            Qt::QueuedConnection);
 
 }
 
@@ -94,16 +95,15 @@ void ClientUI::setUserListWidget()
 void ClientUI::setChatWidget(QString name)
 {
     qDebug() << "Switched to chat";
-//    this->clearLayout();
-    ui->setupUi(this);
+    //    this->clearLayout();
+    //    ui->setupUi(this);
     Chat *chatWidget = new Chat(this);
-//    ui->contentWidget->layout()->deleteLater();
     chatWidget->ui->userNameLabel->setText(name);
     connect(chatWidget->ui->backButton, SIGNAL(clicked()), this,
               SLOT(setUserListWidget()));
     connect(chatWidget, SIGNAL(sendMessageRequest(QString, QString)), this->client->clientSocket,
               SLOT(sendSendMessageRequest(QString, QString)));
-
+    ui->contentWidget->layout()->takeAt(0)->widget()->setVisible(false);
     ui->contentWidget->layout()->addWidget(chatWidget);
     this->client->clientSocket->sendChatRequest(name);
 }
@@ -175,6 +175,8 @@ void ClientUI::sendChatRequest(QListWidgetItem* contact)
     QListWidget *userListWidget = static_cast<UserList*>(activeItem->widget())->ui->userList;
     User *userWidget = static_cast<User*>(userListWidget->itemWidget(contact));
     QString secondUser = userWidget->ui->loginLabel->text();
+    userWidget->deleteLater();
+    QCoreApplication::sendPostedEvents(userWidget, QEvent::DeferredDelete);
     this->setChatWidget(secondUser);
 }
 
