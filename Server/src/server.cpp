@@ -190,9 +190,14 @@ void Server::handleAuthorizationRequest(QTcpSocket *clientSocket, QString &login
       result = "IPSW";// incorrect password
     } else {
       qDebug() << "Sender user sockets count before log in: " << userIDToSocket.count(userId);
-      QString token = generateToken();
-      qDebug() << "Generated token: " << token;
-      sqlitedb->updateToken(userId, token, getConnectionTimeStamp());
+      // QString token = generateToken();
+      QString token, creationTimestamp;
+      sqlitedb->getToken(userId, token, creationTimestamp);
+      if (token == "" || !checkTimeStamp(creationTimestamp)) {
+        token = generateToken();
+        qDebug() << "Generated token: " << token;
+        sqlitedb->updateToken(userId, token, getConnectionTimeStamp());
+      }
       result = "SCSS";
       message = token + " /s " + login;
       userIDToSocket.insert(userId, clientSocket);
