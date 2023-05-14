@@ -40,7 +40,6 @@ void ClientUI::clearLayout()
         delete activeItem->widget();
         // delete activeItem;
     }
-//    qDebug() << "Layout items count: " << ui->contentWidget->layout()->count();
 }
 
 QLayoutItem *ClientUI::getActiveItem()

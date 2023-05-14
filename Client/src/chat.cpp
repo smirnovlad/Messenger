@@ -36,10 +36,12 @@ void Chat::setMessageList(QList<QString> &fromUser, QList<QString> &toUser,
         messageWidget->messageId = messageId[i].toInt();
         if (userName == fromUser[i]) {
             messageWidget->ui->messageLabel->setAlignment(Qt::AlignRight);
+            messageWidget->ui->rightIndent->changeSize(0, 0);
             //messageWidget->ui->editButton->setFixedHeight(10);
         }
         else {
             messageWidget->ui->messageLabel->setAlignment(Qt::AlignLeft);
+            messageWidget->ui->leftIndent->changeSize(0, 0);
 //            messageWidget->ui->editButton->setVisible(false);
 //            messageWidget->ui->messageSpacer->changeSize(0, 0);
 //            messageWidget->ui->verticalSpacer->changeSize(0, 0);
@@ -70,6 +72,7 @@ void Chat::sendMessage(QString message, QString timestamp, int32_t messageId, bo
     messageWidget->ui->messageLabel->setText(message);
     messageWidget->ui->timestampLabel->setText(timestamp);
     messageWidget->ui->messageLabel->setAlignment(Qt::AlignRight);
+    messageWidget->ui->rightIndent->changeSize(0, 0);
     messageWidget->messageId = messageId;
 //    messageWidget->ui->pushButton->setFixedHeight(20);
 
@@ -92,6 +95,7 @@ void Chat::receiveMessage(QString message, QString timestamp, int32_t messageId)
     messageWidget->ui->messageLabel->setText(message);
     messageWidget->ui->timestampLabel->setText(timestamp);
     messageWidget->ui->messageLabel->setAlignment(Qt::AlignLeft);
+    messageWidget->ui->leftIndent->changeSize(0, 0);
     messageWidget->messageId = messageId;
 //    messageWidget->ui->editButton->setVisible(false);
 //    messageWidget->ui->pushButton->setFixedHeight(20);
@@ -133,7 +137,6 @@ void Chat::showContextMenu(const QPoint &position)
 
 void Chat::editMessage(int32_t messageChatIndex, QString editedMessage)
 {
-    qDebug() << "items count: " << ui->messageList->count();
     QListWidgetItem *messageItem = ui->messageList->item(messageChatIndex);
     Message *messageWidget = static_cast<Message*>(ui->messageList->itemWidget(messageItem));
     messageWidget->ui->messageLabel->setText(editedMessage);
