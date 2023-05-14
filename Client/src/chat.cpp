@@ -124,7 +124,7 @@ void Chat::showContextMenu(const QPoint &position)
     if (rightClickItem &&
         rightClickItem->text() == "Edit") {
         QString message = messageWidget->ui->messageLabel->text();
-        QInputDialog inputDialog;
+        QInputDialog inputDialog(this);
         inputDialog.setOkButtonText("Submit");
         inputDialog.setWindowTitle("Edit message");
         inputDialog.setLabelText("New message:");
