@@ -28,7 +28,6 @@ public:
 private:
     Client *client;
     Ui::ClientUI *ui;
-    QWidget *activeLayout;
 
 private:
     void clearLayout();

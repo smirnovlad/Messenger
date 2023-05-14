@@ -337,5 +337,7 @@ bool Server::isCorrectPassword(QString password)
 
 Server::~Server()
 {
+    delete sqlitedb;
+    delete serverSocket;
 }
 

@@ -16,6 +16,8 @@ class Client: public QObject
 Q_OBJECT
 public:
     explicit Client(QObject *parent = nullptr);
+    ~Client();
+
 
     void saveToken(QString token);
     QString getToken();

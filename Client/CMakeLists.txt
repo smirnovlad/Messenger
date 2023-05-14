@@ -12,8 +12,7 @@ set(CMAKE_CXX_STAcNDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 #set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address")
-
-#list(APPEND CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR})
+#set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=leak")
 
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 conan_basic_setup()

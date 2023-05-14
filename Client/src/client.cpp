@@ -8,6 +8,12 @@ Client::Client(QObject *parent)
     , clientSocket(new ClientSocket(NULL, this))
 {}
 
+Client::~Client()
+{
+    delete clientUI;
+    delete clientSocket;
+}
+
 void Client::saveToken(QString token)
 {
     QString tokenFileName = userLogin + "_token";

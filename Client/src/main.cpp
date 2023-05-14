@@ -1,7 +1,6 @@
 #include "inc/clientui.h"
 
 #include <QApplication>
-#include "inc/authorization.h"
 
 int main(int argc, char *argv[])
 {

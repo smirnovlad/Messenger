@@ -25,7 +25,6 @@ ClientUI::ClientUI(QWidget *parent, Client *client)
 
     connect(this, SIGNAL(getChatWidget(QString)), this, SLOT(setChatWidget(QString)),
             Qt::QueuedConnection);
-
 }
 
 ClientUI::~ClientUI()
@@ -188,7 +187,7 @@ void ClientUI::sendChatRequest(QListWidgetItem *contact)
     QString secondUser = userWidget->ui->loginLabel->text();
     userWidget->deleteLater();
     QCoreApplication::sendPostedEvents(userWidget, QEvent::DeferredDelete);
-    this->setChatWidget(secondUser);
+    emit getChatWidget(secondUser);
 }
 
 void ClientUI::handleSendMessage(QStringList result)
