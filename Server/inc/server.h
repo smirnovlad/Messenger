@@ -42,6 +42,7 @@ private:
     bool isCorrectPassword(QString password);
 
 private:
+    void handleDisconnection(QTcpSocket *clientSocket);
     void handleRegistrationRequest(QTcpSocket *clientSocket, QString &login, QString &password);
     void handleAuthorizationRequest(QTcpSocket *clientSocket, QString &login, QString &password);
     void handleContactListRequest(QTcpSocket *clientSocket, QString token);
@@ -53,6 +54,5 @@ private:
     void handleEditMessageRequest(QTcpSocket *clientSocket, QString sender, QString receiver,
                                   int32_t messageId, QString editedMessage, int32_t messageChatIndex,
                                   QString token);
-    void handleDisconnection(QTcpSocket *clientSocket);
 };
 #endif // SERVER_H

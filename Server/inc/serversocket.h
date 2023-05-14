@@ -19,13 +19,11 @@ public:
 
 private:
     Server *server;
-
-    QStringList requestSeparation(QString text, QString sep);
-
-public:
     QTcpServer *tcpServer;
 
 private:
+    QStringList requestSeparation(QString text, QString sep);
+
     void sendRegistrationResponse(QTcpSocket *clientSocket, QString result, QString message);
     void sendAuthorizationResponse(QTcpSocket *clientSocket, QString result, QString message);
     void sendContactListResponse(QTcpSocket *clientSocket, QString message);
@@ -42,11 +40,6 @@ private slots:
     void handleConnectionRequest();
     void handleDisconnection();
     void getRequest();
-
-public slots:
-
-
-signals:
 
 };
 

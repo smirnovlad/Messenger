@@ -5,28 +5,31 @@
 #include <QTcpServer>
 #include <QTcpSocket>
 #include "client.h"
+#include "clientui.h"
 
 class Client;
+class CLientUI;
 
 class ClientSocket: public QObject
 {
 Q_OBJECT
+
+    friend class Client;
+    friend class ClientUI;
+
+private:
+    Client *client;
+    QTcpSocket *tcpSocket;
+
 public:
     explicit ClientSocket(QObject *parent = nullptr, Client *client = nullptr);
 
 private:
-    Client *client;
-
-public:
-    QTcpSocket *tcpSocket;
-
     QStringList requestSeparation(QString text, QString sep);
     void connectSocketToHost();
 
 private slots:
     void getResponse();
-
-public slots:
     void sendSignUpRequest(QString login, QString password);
     void sendLogInRequest(QString login, QString password);
     void sendContactListRequest();
@@ -35,8 +38,6 @@ public slots:
     void sendLogOutRequest();
     void sendEditMessageRequest(QString receiver, int32_t messageId, QString editedMessage,
                                 int32_t messageChatIndex);
-
-signals:
 
 };
 

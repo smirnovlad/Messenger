@@ -14,19 +14,21 @@ class ClientSocket;
 class Client: public QObject
 {
 Q_OBJECT
+
+friend class ClientSocket;
+friend class ClientUI;
+
 public:
     explicit Client(QObject *parent = nullptr);
     ~Client();
 
-
+private:
     void saveToken(QString token);
     QString getToken();
 
-public:
+private:
     ClientSocket *clientSocket;
     ClientUI *clientUI;
-
-public:
     QString userLogin;
 
 };

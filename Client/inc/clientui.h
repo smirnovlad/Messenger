@@ -6,6 +6,7 @@
 #include <QListWidget>
 
 #include "client.h"
+#include "clientui.h"
 #include "authorization.h"
 
 QT_BEGIN_NAMESPACE
@@ -21,6 +22,9 @@ class ClientUI: public QMainWindow
 {
 Q_OBJECT
 
+friend class Client;
+friend class ClientSocket;
+
 public:
     ClientUI(QWidget *parent = nullptr, Client *client = nullptr);
     ~ClientUI();
@@ -34,8 +38,6 @@ private:
     QLayoutItem *getActiveItem();
 
     void handleIncorrectToken();
-
-public:
     void handleRegistration(QStringList result);
     void handleAuthorization(QStringList result);
     void handleContactList(QString result, const QList<QPair<QString, QString> > &contactList);
