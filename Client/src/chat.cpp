@@ -35,7 +35,7 @@ void Chat::setMessageList(QList<QString> &fromUser, QList<QString> &toUser,
         messageWidget->ui->timestampLabel->setText(timestamp[i]);
         messageWidget->messageId = messageId[i].toInt();
         if (userName == fromUser[i]) {
-            messageWidget->ui->messageLabel->setAlignment(Qt::AlignRight);
+            messageWidget->ui->messageLabel->setAlignment(Qt::AlignLeft);
             messageWidget->ui->rightIndent->changeSize(0, 0);
             //messageWidget->ui->editButton->setFixedHeight(10);
         }
@@ -71,7 +71,7 @@ void Chat::sendMessage(QString message, QString timestamp, int32_t messageId, bo
 
     messageWidget->ui->messageLabel->setText(message);
     messageWidget->ui->timestampLabel->setText(timestamp);
-    messageWidget->ui->messageLabel->setAlignment(Qt::AlignRight);
+    messageWidget->ui->messageLabel->setAlignment(Qt::AlignLeft);
     messageWidget->ui->rightIndent->changeSize(0, 0);
     messageWidget->messageId = messageId;
 //    messageWidget->ui->pushButton->setFixedHeight(20);
@@ -114,7 +114,10 @@ void Chat::showContextMenu(const QPoint &position)
     Message *messageWidget = static_cast<Message *>(ui->messageList->itemWidget(messageItem));
     QPoint item = ui->messageList->mapToGlobal(position);
     QMenu *menu = new QMenu(this);
-    if (messageWidget->ui->messageLabel->alignment() & Qt::AlignRight) {
+//    if (messageWidget->ui->messageLabel->alignment() & Qt::AlignRight) {
+//        menu->addAction(new QAction("Edit", this));
+//    }
+    if (messageWidget->ui->rightIndent->sizeHint() == QSize(0, 0)) {
         menu->addAction(new QAction("Edit", this));
     }
     QAction *rightClickItem = menu->exec(item);
