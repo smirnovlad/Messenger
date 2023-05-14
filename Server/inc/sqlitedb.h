@@ -5,11 +5,11 @@
 #include <QtSql>
 #include <QPair>
 
-typedef QList <QPair <QString, QList<QPair <QString, QString> > > > ChatListVector;
+typedef QList<QPair<QString, QList<QPair<QString, QString> > > > ChatListVector;
 
-class SQLiteDB : public QObject
+class SQLiteDB: public QObject
 {
-    Q_OBJECT
+Q_OBJECT
 public:
     explicit SQLiteDB(QObject *parent = nullptr);
     ~SQLiteDB();
@@ -22,14 +22,14 @@ public:
     int32_t findUser(QString login);
     bool checkPassword(int32_t id, QString password);
     int32_t addUser(QString login, QString password);
-    void getContactList(QString& contactList);
-    void getMessageList(QString& messageList, QString firstUser, QString secondUser);
+    void getContactList(QString &contactList);
+    void getMessageList(QString &messageList, QString firstUser, QString secondUser);
     void sendMessage(QString firstUser, QString secondUser, QString message, QString timestamp,
-                     int32_t& messageId);
+                     int32_t &messageId);
     void editMessage(QString firstUser, QString secondUser, int32_t messageId, QString editedMessage);
 
     void updateToken(int32_t userId, QString token, QString timestamp);
-    void getToken(int32_t userId, QString& token, QString& timestamp);
+    void getToken(int32_t userId, QString &token, QString &timestamp);
 };
 
 #endif // SQLITEDB_H

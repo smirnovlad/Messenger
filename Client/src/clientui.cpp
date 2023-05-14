@@ -285,7 +285,7 @@ void ClientUI::handleEditMessage(QStringList result)
         if (sender == client->userLogin &&
             chatWidget->ui->userNameLabel->text() == receiver ||
             receiver == client->userLogin &&
-            chatWidget->ui->userNameLabel->text() == sender) {
+                chatWidget->ui->userNameLabel->text() == sender) {
             qDebug() << "Edit message";
             chatWidget->editMessage(messageChatIndex, editedMessage);
         }

@@ -265,8 +265,8 @@ void ClientSocket::sendEditMessageRequest(QString receiver,
     }
     else {
         request.append(QString("%1 /s %2 /s %3 /s %4 /s %5 /s %6").arg(client->userLogin)
-                            .arg(receiver).arg(messageId).arg(editedMessage).arg(messageChatIndex)
-                            .arg(client->getToken()));
+                           .arg(receiver).arg(messageId).arg(editedMessage).arg(messageChatIndex)
+                           .arg(client->getToken()));
         tcpSocket->write(request.toUtf8());
     }
 }

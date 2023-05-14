@@ -11,9 +11,9 @@
 class ClientUI;
 class ClientSocket;
 
-class Client : public QObject
+class Client: public QObject
 {
-    Q_OBJECT
+Q_OBJECT
 public:
     explicit Client(QObject *parent = nullptr);
 

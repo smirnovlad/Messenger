@@ -2,19 +2,21 @@
 #define SERVER_H
 
 #include <QObject>
-#include <QTcpServer>
-#include <QTcpSocket>
-#include <QMessageBox>
 #include <QTimer>
 #include <QDateTime>
-#include <QList>
-#include <QPair>
 
 #include "sqlitedb.h"
+#include "serversocket.h"
 
-class Server : public QObject
+class SQLiteDB;
+class ServerSocket;
+
+class Server: public QObject
 {
-    Q_OBJECT
+Q_OBJECT
+
+    friend class SQLiteDB;
+    friend class ServerSocket;
 
 public:
     Server(QObject *parent = nullptr);
@@ -22,9 +24,9 @@ public:
 
 private:
     SQLiteDB *sqlitedb;
-    QTcpServer *tcpServer;
-    QMultiMap<uint32_t, QTcpSocket*> userIDToSocket;
-    QMap<QTcpSocket*, uint32_t> socketToUserID;
+    ServerSocket *serverSocket;
+    QMultiMap<uint32_t, QTcpSocket *> userIDToSocket;
+    QMap<QTcpSocket *, uint32_t> socketToUserID;
 
     QString incorrectLoginSymbols = "_' ,.!@#$%^&*()<>+=-/|~`\"";
     QString incorrectPasswordSymbols = "/";
@@ -41,37 +43,16 @@ private:
 
 private:
     void handleRegistrationRequest(QTcpSocket *clientSocket, QString &login, QString &password);
-    void sendRegistrationResponse(QTcpSocket *clientSocket, QString result, QString message);
-
     void handleAuthorizationRequest(QTcpSocket *clientSocket, QString &login, QString &password);
-    void sendAuthorizationResponse(QTcpSocket *clientSocket, QString result, QString message);
-
     void handleContactListRequest(QTcpSocket *clientSocket, QString token);
-    void sendContactListResponse(QTcpSocket *clientSocket, QString message);
-
     void handleMessageListRequest(QTcpSocket *clientSocket, QString firstUser,
                                   QString secondUser, QString token);
-    void sendMessageListResponse(QTcpSocket *clientSocket, QString message);
-
     void handleSendMessageRequest(QTcpSocket *clientSocket, QString sender, QString receiver,
                                   QString message, QString token);
-    void sendSendMessageResponse(QTcpSocket *clientSocket, QString result, QString message,
-                                 QString firstUser, QString secondUser, QString timestamp,
-                                 int32_t messageId, bool toActualSender);
-
     void handleLogOutRequest(QTcpSocket *clientSocket);
-    void sendLogOutResponse(QTcpSocket *clientSocket, QString result);
-
     void handleEditMessageRequest(QTcpSocket *clientSocket, QString sender, QString receiver,
                                   int32_t messageId, QString editedMessage, int32_t messageChatIndex,
                                   QString token);
-    void sendEditMessageResponse(QTcpSocket *clientSOcket, QString result,
-                                 QString sender, QString receiver,
-                                 QString editedMessage, int32_t messageChatIndex);
-
-private slots:
-    void handleConnectionRequest();
-    void handleDisconnection();
-    void getRequest();
+    void handleDisconnection(QTcpSocket *clientSocket);
 };
 #endif // SERVER_H

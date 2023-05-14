@@ -18,7 +18,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 conan_basic_setup()
 
-find_package(Qt5 COMPONENTS Widgets Core Gui Sql Network REQUIRED)
+find_package(Qt5 COMPONENTS Widgets Core Gui Network REQUIRED)
 
 set(PROJECT_SOURCES
         src/registration.cpp
@@ -57,4 +57,4 @@ set(PROJECT_UI
 )
 
 add_executable(Client ${PROJECT_SOURCES} ${PROJECT_HEADERS} ${PROJECT_UI})
-target_link_libraries(Client PRIVATE Qt5::Widgets Qt5::Core Qt5::Gui Qt5::Sql Qt5::Network)
+target_link_libraries(Client PRIVATE Qt5::Widgets Qt5::Core Qt5::Gui Qt5::Network)
