@@ -267,6 +267,10 @@ void ClientUI::handleConnectionError(QStringList request)
     else if (request[0] == "MSSG") {
         client->clientSocket->sendSendMessageRequest(request[1], request[2]);
     }
+    else if (request[0] == "EMSG") {
+        client->clientSocket->sendEditMessageRequest(request[1], request[2].toInt(),
+                                                     request[3], request[4].toInt());
+    }
 }
 
 void ClientUI::handleEditMessage(QStringList result)

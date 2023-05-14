@@ -259,12 +259,14 @@ void ClientSocket::sendEditMessageRequest(QString receiver,
     if (tcpSocket->state() != QAbstractSocket::ConnectedState) {
         QStringList userRequest;
         userRequest.append(request);
+        userRequest.append({receiver, QString::number(messageId),
+                            editedMessage, QString::number(messageChatIndex)});
         client->clientUI->handleConnectionError(userRequest);
     }
     else {
-        request.append(QString("%1 /s %2 /s %3 /s %4 /s %5 /s %6").arg(client->userLogin).arg(receiver)
-                           .arg(messageId).arg(editedMessage).arg(messageChatIndex)
-                           .arg(client->getToken()));
+        request.append(QString("%1 /s %2 /s %3 /s %4 /s %5 /s %6").arg(client->userLogin)
+                            .arg(receiver).arg(messageId).arg(editedMessage).arg(messageChatIndex)
+                            .arg(client->getToken()));
         tcpSocket->write(request.toUtf8());
     }
 }
