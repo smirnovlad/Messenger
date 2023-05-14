@@ -124,15 +124,17 @@ void Chat::showContextMenu(const QPoint &position)
     if (rightClickItem &&
         rightClickItem->text() == "Edit") {
         QString message = messageWidget->ui->messageLabel->text();
-        bool ok;
-        QString editedMessage = QInputDialog::getText(this, tr("Edit message"),
-                                                      tr("New message:"), QLineEdit::Normal,
-                                                      message, &ok);
-        if (ok && !editedMessage.isEmpty()) {
+        QInputDialog inputDialog;
+        inputDialog.setOkButtonText("Submit");
+        inputDialog.setWindowTitle("Edit message");
+        inputDialog.setLabelText("New message:");
+        inputDialog.setTextValue(message);
+        inputDialog.setTextEchoMode(QLineEdit::Normal);
+        if (inputDialog.exec() == QDialog::Accepted && !inputDialog.textValue().isEmpty()) {
             QString receiver = this->ui->userNameLabel->text();
             int32_t messageId = messageWidget->messageId;
             int32_t messageChatIndex = this->ui->messageList->row(messageItem);
-            emit editMessageRequest(receiver, messageId, editedMessage, messageChatIndex);
+            emit editMessageRequest(receiver, messageId, inputDialog.textValue(), messageChatIndex);
         }
 //      ui->messageList->takeItem(ui->messageList->indexAt(position).row());
     }
