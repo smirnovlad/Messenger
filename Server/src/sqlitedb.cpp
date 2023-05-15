@@ -7,7 +7,7 @@ SQLiteDB::SQLiteDB(QObject *parent)
 {
     DB = QSqlDatabase::addDatabase("QSQLITE");
 
-    qDebug() << "Current directory: " << QDir::currentPath();
+    //    qDebug() << "Current directory: " << QDir::currentPath();
 
     QString pathToDB = QString(QDir::currentPath() + "/../../MessengerDB");
     DB.setDatabaseName(pathToDB);
@@ -22,13 +22,13 @@ SQLiteDB::SQLiteDB(QObject *parent)
         }
     }
     else {
-        qDebug() << "Error while connecting. Path to DB: " << pathToDB;
+        qDebug() << "DB: Error while connecting. Path to DB: " << pathToDB;
     }
 }
 
 SQLiteDB::~SQLiteDB()
 {
-    qDebug() << "Closing the connection to Database file on exist";
+    qDebug() << "DB: Closing the connection to Database file on exist.";
     DB.close();
 }
 
@@ -41,9 +41,31 @@ QString SQLiteDB::getLoginByID(int32_t id)
         }
     }
     else {
-        qDebug() << "Bad query";
+        qDebug() << "DB: Bad query while getting login by id.";
     }
     return "";
+}
+
+QString SQLiteDB::getChatName(QString firstUser, QString secondUser)
+{
+    QString chatName = "Chat_" + firstUser + "_" + secondUser;
+    if (DB.tables().contains(chatName)) {
+        return chatName;
+    }
+    chatName = "Chat_" + secondUser + "_" + firstUser;
+    if (DB.tables().contains(chatName)) {
+        return chatName;
+    }
+    QSqlQuery query(DB);
+    if (query.exec("CREATE TABLE " + chatName +
+        " (id INTEGER PRIMARY KEY, fromID INTEGER NOT NULL, toID INTEGER NOT NULL, "
+        "message TEXT NOT NULL, timestamp TEXT NOT NULL)")) {
+        qDebug() << "New chat created: " << chatName;
+    }
+    else {
+        qDebug() << "DB: Bad query while creating new chat: " << chatName;
+    }
+    return chatName;
 }
 
 int32_t SQLiteDB::findUser(QString login)
@@ -55,7 +77,7 @@ int32_t SQLiteDB::findUser(QString login)
         }
     }
     else {
-        qDebug() << "Bad query";
+        qDebug() << "DB: Bad query while finding user.";
     }
     return -1;
 }
@@ -69,7 +91,7 @@ bool SQLiteDB::checkPassword(int32_t id, QString password)
         }
     }
     else {
-        qDebug() << "Bad query";
+        qDebug() << "DB: Bad query while checking password.";
     }
     return false;
 }
@@ -87,7 +109,7 @@ int32_t SQLiteDB::addUser(QString login, QString password)
             return query.value(0).toInt();
         }
     }
-    qDebug() << "Bad query while getting new user id.";
+    qDebug() << "DB: Bad query while getting new user id.";
     return -1;
 }
 
@@ -108,32 +130,30 @@ void SQLiteDB::getContactList(QString &contactList)
 void SQLiteDB::getMessageList(QString &messageList, QString firstUser, QString secondUser)
 {
     QSqlQuery query(DB);
-    QString chatName = "Chat_" + firstUser + "_" + secondUser;
-    if (query.exec("CREATE TABLE IF NOT EXISTS " + chatName +
-        " (id INTEGER PRIMARY KEY, fromID INTEGER NOT NULL, toID INTEGER NOT NULL, "
-        "message TEXT NOT NULL, timestamp TEXT NOT NULL)")) {
-        if (query.exec("SELECT * FROM " + chatName)) {
-            while (query.next()) {
-                if (messageList.length()) {
-                    messageList.append(" /n ");
-                }
-                messageList.append(getLoginByID(query.value(1).toInt()) + " /s " +
-                    getLoginByID(query.value(2).toInt()) + " /s " +
-                    query.value(3).toString() + " /s " +
-                    query.value(4).toString() + " /s " +
-                    query.value(0).toString());
+    QString chatName = getChatName(firstUser, secondUser);
+    if (query.exec("SELECT * FROM " + chatName)) {
+        while (query.next()) {
+            if (messageList.length()) {
+                messageList.append(" /n ");
             }
-            return;
+            messageList.append(getLoginByID(query.value(1).toInt()) + " /s " +
+                getLoginByID(query.value(2).toInt()) + " /s " +
+                query.value(3).toString() + " /s " +
+                query.value(4).toString() + " /s " +
+                query.value(0).toString());
         }
+        return;
     }
-    qDebug() << "Bad query while creating new chat table.";
+    else {
+        qDebug() << "DB: Bad query while selecting chat history.";
+    }
 }
 
 void SQLiteDB::sendMessage(QString firstUser, QString secondUser, QString message, QString timestamp,
                            int32_t &messageId)
 {
     QSqlQuery query(DB);
-    QString chatName = "Chat_" + firstUser + "_" + secondUser;
+    QString chatName = getChatName(firstUser, secondUser);
     int32_t fromID = findUser(firstUser);
     int32_t toID = findUser(secondUser);
 
@@ -143,34 +163,25 @@ void SQLiteDB::sendMessage(QString firstUser, QString secondUser, QString messag
     query.bindValue(":toID", toID);
     query.bindValue(":message", message);
     query.bindValue(":timestamp", timestamp);
-    query.exec();
-
-    chatName = "Chat_" + secondUser + "_" + firstUser;
-
-    if (query.exec("CREATE TABLE IF NOT EXISTS " + chatName +
-        " (id INTEGER PRIMARY KEY, fromID INTEGER NOT NULL, toID INTEGER NOT NULL, "
-        "message TEXT NOT NULL, timestamp TEXT NOT NULL)")) {
-        query.prepare("INSERT INTO " + chatName + "(fromID, toID, message, timestamp) "
-                                                  "VALUES (:fromID, :toID, :message, :timestamp)");
-        query.bindValue(":fromID", fromID);
-        query.bindValue(":toID", toID);
-        query.bindValue(":message", message);
-        query.bindValue(":timestamp", timestamp);
-        query.exec();
+    if (query.exec()) {
         messageId = query.lastInsertId().toInt();
+        qDebug() << "DB: Message sent.";
     }
     else {
-        qDebug() << "Bad query while creating chat table for second user.";
+        qDebug() << "DB: Bad query while creating chat table for second user.";
     }
 }
 
 void SQLiteDB::editMessage(QString firstUser, QString secondUser, int32_t messageId, QString editedMessage)
 {
     QSqlQuery query(DB);
-    QString chatName = "Chat_" + firstUser + "_" + secondUser;
-    if (!query.exec("UPDATE " + chatName + " SET message='" + editedMessage +
+    QString chatName = getChatName(firstUser, secondUser);
+    if (query.exec("UPDATE " + chatName + " SET message='" + editedMessage +
         "' WHERE id=" + QString::number(messageId))) {
-        qDebug() << "Bad query while updating message.";
+        qDebug() << "DB: Message updated.";
+    }
+    else {
+        qDebug() << "DB: Bad query while updating message.";
     }
 }
 
@@ -199,7 +210,7 @@ void SQLiteDB::updateToken(int32_t userId, QString token, QString timestamp)
         return;
     }
     else {
-        qDebug() << "Bad query while searching user token.";
+        qDebug() << "DB: Bad query while searching user token.";
     }
 }
 
@@ -214,6 +225,6 @@ void SQLiteDB::getToken(int32_t userId, QString &token, QString &timestamp)
         return;
     }
     else {
-        qDebug() << "Bad query while getting token.";
+        qDebug() << "DB: Bad query while getting token.";
     }
 }

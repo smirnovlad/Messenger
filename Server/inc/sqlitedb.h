@@ -18,6 +18,7 @@ public:
 private:
     QSqlDatabase DB;
     QString getLoginByID(int32_t id);
+    QString getChatName(QString firstUser, QString secondUser);
 
 public:
     int32_t findUser(QString login);
