@@ -25,8 +25,8 @@ public:
 private:
     SQLiteDB *sqlitedb;
     ServerSocket *serverSocket;
-    QMultiMap<uint32_t, QTcpSocket *> userIDToSocket;
-    QMap<QTcpSocket *, uint32_t> socketToUserID;
+    QMultiHash<uint32_t, QTcpSocket *> userIDToSocket;
+    QHash<QTcpSocket *, uint32_t> socketToUserID;
 
     QString incorrectLoginSymbols = "_' ,.!@#$%^&*()<>+=-/|~`\"";
     QString incorrectPasswordSymbols = "/";
