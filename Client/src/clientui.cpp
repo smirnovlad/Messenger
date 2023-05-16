@@ -251,10 +251,14 @@ void ClientUI::handleConnectionError(QStringList request)
     while (client->clientSocket->tcpSocket->state() != QAbstractSocket::ConnectedState) {
         QMessageBox msgBox;
         msgBox.setText("You are not connected to server. Would you like to try to connect?");
+        QAbstractButton *pButtonExit = msgBox.addButton(tr("Exit"), QMessageBox::NoRole);
         QAbstractButton *pButtonTryAgain = msgBox.addButton(tr("Try to connect"), QMessageBox::YesRole);
         msgBox.exec();
         if (msgBox.clickedButton() == pButtonTryAgain) {
             client->clientSocket->connectSocketToHost();
+        } else {
+            QApplication::quit();
+            return;
         }
     }
     if (request[0] == "CHAT") {
