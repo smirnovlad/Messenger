@@ -1,0 +1,11 @@
+[requires]
+qt/5.15.8
+
+[generators]
+cmake
+cmake_find_package
+cmake_find_package_multi
+pkg_config
+
+[options]
+qt:shared=True

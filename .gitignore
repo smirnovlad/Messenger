@@ -1,0 +1,5 @@
+example_*.webm
+build_*.webm
+*build
+*.zip
+*.idea
