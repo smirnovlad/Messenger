@@ -4,9 +4,25 @@ A cross-platform desktop client-server messenger has been implemented.
 ## How to build
 The Conan package manager and CMake are used for building the application.
 
-To build the project, it is recommended to install Conan version 1.59.0 and execute the following commands from the project directory (separately for the server and the client):
+To build the project, it is recommended to install Conan version 1.59.0:
 ```
 pip3 install conan==1.59.0
+```
+
+Next, you need to execute the following commands from the project directory:
+### Server
+```
+cd Server/
+rm -rf build
+mkdir build && cd build/
+conan install .. --build=missing -c tools.system.package_manager:mode=install -c tools.system.package_manager:sudo=True
+cmake ..
+make
+```
+
+### Client
+```
+cd Client/
 rm -rf build
 mkdir build && cd build/
 conan install .. --build=missing -c tools.system.package_manager:mode=install -c tools.system.package_manager:sudo=True
@@ -15,18 +31,16 @@ make
 ```
 
 ## How to run
-To launch the application, you need to execute the following commands from the project directory (separately for the server and the client):
+To launch the application, you need to execute the following commands from the project directory:
 ### Server
 ```
-cd build/bin/
-export QT_QPA_PLATFORM=offscreen
+cd Server/build/bin/
 ./Server
 ```
 
 ### Client
 ```
-cd build/bin/
-export QT_QPA_PLATFORM=offscreen
+cd Client/build/bin/
 ./Client
 ```
 
