@@ -9,3 +9,9 @@ pkg_config
 
 [options]
 qt:shared=True
+
+[imports]
+bin, *.dll -> ./bin # Copies all dll files from packages bin folder to my "bin" folder
+bin, *.so -> ./bin # Copies all so files from packages bin folder to my "bin" folder
+lib, *.dylib* -> ./lib # Copies all dylib files from packages lib folder to my "lib" folder
+lib, *.so* -> ./lib # Copies all so files from packages lib folder to my "lib" folder

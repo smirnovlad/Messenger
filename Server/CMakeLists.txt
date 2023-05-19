@@ -15,12 +15,19 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 #set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=leak")
 
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-conan_basic_setup()
+conan_basic_setup(KEEP_RPATHS)
+
+if (APPLE)
+    set(CMAKE_INSTALL_RPATH "@executable_path/../lib")
+else()
+    set(CMAKE_INSTALL_RPATH "$ORIGIN/../lib")
+endif()
+
+set(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
 
 set(CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR})
 
 find_package(Qt5 COMPONENTS Widgets Core Sql Network REQUIRED)
-
 
 set(PROJECT_SOURCES
         src/main.cpp
