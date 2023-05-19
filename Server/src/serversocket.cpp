@@ -23,7 +23,7 @@ void ServerSocket::handleConnectionRequest()
 void ServerSocket::handleDisconnection()
 {
     QTcpSocket *clientSocket = static_cast<QTcpSocket *>(QObject::sender());
-    qDebug() << "Disconnect socket: " << clientSocket;
+    qDebug() << "// incorrect tokenDisconnect socket: " << clientSocket;
     server->handleDisconnection(clientSocket);
 }
 
@@ -54,6 +54,8 @@ void ServerSocket::getRequest()
     };
     COMMAND command = COMMAND::NONE;
 
+    qDebug() << "\n--------------------------------------------------------------------"
+                "----------------------------------------------------------------------";
     qDebug() << "Packet type: " << packetType;
 
     if (packetType == "REGI") {
@@ -186,7 +188,7 @@ void ServerSocket::sendLogOutResponse(QTcpSocket *clientSocket, QString result)
     clientSocket->write(response.toUtf8());
 }
 
-void ServerSocket::sendEditMessageResponse(QTcpSocket *clientSOcket,
+void ServerSocket::sendEditMessageResponse(QTcpSocket *clientSocket,
                                            QString result,
                                            QString sender,
                                            QString receiver,
@@ -196,6 +198,6 @@ void ServerSocket::sendEditMessageResponse(QTcpSocket *clientSOcket,
     QString response = "EMSG";
     response.append(result + " /s " + sender + " /s " + receiver + " /s " +
         editedMessage + " /s " + QString::number(messageChatIndex));
-    clientSOcket->write(response.toUtf8());
+    clientSocket->write(response.toUtf8());
 }
 
