@@ -17,6 +17,14 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 conan_basic_setup()
 
+if (APPLE)
+    set(CMAKE_INSTALL_RPATH "@executable_path/../lib")
+else()
+    set(CMAKE_INSTALL_RPATH "$ORIGIN/../lib")
+endif()
+
+set(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
+
 set(CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR})
 
 find_package(Qt5 COMPONENTS Widgets Core Gui Network REQUIRED)

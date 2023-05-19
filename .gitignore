@@ -3,3 +3,4 @@ build_*.webm
 *build
 *.zip
 *.idea
+/cmake-build-debug
