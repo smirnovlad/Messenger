@@ -1,6 +1,8 @@
 # Messenger
 A cross-platform desktop client-server messenger has been implemented.
 
+![example_4](https://github.com/smirnovlad/Messenger/assets/86618271/13ce5b3c-4cb6-4587-bdea-9c0c3bc50343)
+
 ## How to build
 The Conan package manager and CMake are used for building the application.
 
