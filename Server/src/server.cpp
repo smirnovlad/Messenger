@@ -1,4 +1,5 @@
 #include "inc/server.h"
+#include "inc/config.h"
 
 #include <QDir>
 #include <random>
@@ -60,7 +61,8 @@ void Server::handleRegistrationRequest(QTcpSocket *clientSocket, QString &login,
     }
     else if (!isCorrectLogin(login) || !isCorrectPassword(password)) {
         result = "ICHR";
-        message = incorrectLoginCharacters + " /s " + incorrectPasswordCharacters;
+        message = server::config::INCORRECT_LOGIN_CHARACTERS + " /s " +
+            server::config::INCORRECT_PASSWORD_CHARACTERS;
     }
     else if (sqlitedb->findUser(login) != -1) {
         result = "ALRD";
@@ -86,7 +88,8 @@ void Server::handleAuthorizationRequest(QTcpSocket *clientSocket, QString &login
     }
     else if (!isCorrectLogin(login) || !isCorrectPassword(password)) {
         result = "ICHR";
-        message = incorrectLoginCharacters + " /s " + incorrectPasswordCharacters;
+        message = server::config::INCORRECT_LOGIN_CHARACTERS + " /s " +
+            server::config::INCORRECT_PASSWORD_CHARACTERS;
     }
     else {
         int32_t userId = sqlitedb->findUser(login);
@@ -173,7 +176,7 @@ void Server::handleSendMessageRequest(QTcpSocket *clientSocket, QString sender,
     // Send the response to other clients only in case of success
     uint32_t senderUserId = sqlitedb->findUser(sender);
     auto senderUserSockets = userIDToSocket.equal_range(senderUserId);
-    qDebug() << "The current sender socket: " << clientSocket;
+    qDebug() << "The current sender socket: " << clientSocket->socketDescriptor();
     qDebug() << "The number of sender's sockets: " << userIDToSocket.count(senderUserId);
     for (auto it = senderUserSockets.first; it != senderUserSockets.second; ++it) {
         if (it.value() == clientSocket) {
@@ -243,7 +246,7 @@ void Server::handleEditMessageRequest(QTcpSocket *clientSocket,
 
     uint32_t senderUserId = sqlitedb->findUser(sender);
     auto senderUserSockets = userIDToSocket.equal_range(senderUserId);
-    qDebug() << "The current sender socket: " << clientSocket;
+    qDebug() << "The current sender socket: " << clientSocket->socketDescriptor();
     qDebug() << "The number of sender's sockets: " << userIDToSocket.count(senderUserId);
     for (auto it = senderUserSockets.first; it != senderUserSockets.second; ++it) {
         serverSocket->sendEditMessageResponse(it.value(), result, sender, receiver,
@@ -316,7 +319,7 @@ bool Server::checkTimeStamp(QString timeStamp)
 
 bool Server::isCorrectLogin(QString login)
 {
-    for (QChar character : incorrectLoginCharacters) {
+    for (QChar character : server::config::INCORRECT_LOGIN_CHARACTERS) {
         if (login.contains(character)) {
             return false;
         }
@@ -326,7 +329,7 @@ bool Server::isCorrectLogin(QString login)
 
 bool Server::isCorrectPassword(QString password)
 {
-    for (QChar character : incorrectPasswordCharacters) {
+    for (QChar character : server::config::INCORRECT_PASSWORD_CHARACTERS) {
         if (password.contains(character)) {
             return false;
         }
