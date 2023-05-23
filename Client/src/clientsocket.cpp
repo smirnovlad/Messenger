@@ -1,4 +1,5 @@
 #include "inc/clientsocket.h"
+#include "inc/config.h"
 
 ClientSocket::ClientSocket(QObject *parent, Client *client)
     : QObject(parent), client(client), tcpSocket(new QTcpSocket(this))
@@ -10,10 +11,8 @@ ClientSocket::ClientSocket(QObject *parent, Client *client)
 
 void ClientSocket::connectSocketToHost()
 {
-    QString hostname = "127.0.0.1";
-    quint32 port = 55155;
 //    tcpSocket->abort();
-    tcpSocket->connectToHost(hostname, port);
+    tcpSocket->connectToHost(client::config::HOST_NAME, client::config::PORT);
 }
 
 QStringList ClientSocket::requestSeparation(QString text, QString sep)

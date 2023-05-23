@@ -1,9 +1,10 @@
 #include "inc/serversocket.h"
+#include "inc/config.h"
 
 ServerSocket::ServerSocket(QObject *parent, Server *server)
     : QObject(parent), server(server), tcpServer(new QTcpServer(this))
 {
-    if (!tcpServer->listen(QHostAddress::Any, 55155)) {
+    if (!tcpServer->listen(server::config::HOST_ADDRESS, server::config::PORT)) {
         qDebug() << tr("Unable to start up server: %1").arg(tcpServer->errorString());
     }
 
@@ -23,7 +24,7 @@ void ServerSocket::handleConnectionRequest()
 void ServerSocket::handleDisconnection()
 {
     QTcpSocket *clientSocket = static_cast<QTcpSocket *>(QObject::sender());
-    qDebug() << "// incorrect tokenDisconnect socket: " << clientSocket;
+    qDebug() << "Disconnect socket: " << clientSocket;
     server->handleDisconnection(clientSocket);
 }
 

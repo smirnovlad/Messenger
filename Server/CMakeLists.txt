@@ -39,6 +39,7 @@ set(PROJECT_HEADERS
         inc/server.h
         inc/sqlitedb.h
         inc/serversocket.h
+        inc/config.h
 )
 
 add_executable(Server main.cpp ${PROJECT_SOURCES} ${PROJECT_HEADERS})

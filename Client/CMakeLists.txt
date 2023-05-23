@@ -51,6 +51,7 @@ set(PROJECT_HEADERS
         inc/message.h
         inc/clientsocket.h
         inc/clientui.h
+        inc/config.h
 )
 
 set(PROJECT_UI
