@@ -39,7 +39,6 @@ set(PROJECT_SOURCES
         src/clientsocket.cpp
         src/clientui.cpp
         src/client.cpp
-        src/main.cpp
 )
 
 set(PROJECT_HEADERS
@@ -65,6 +64,6 @@ set(PROJECT_UI
         src/clientui.ui
 )
 
-add_executable(Client ${PROJECT_SOURCES} ${PROJECT_HEADERS} ${PROJECT_UI})
+add_executable(Client main.cpp ${PROJECT_SOURCES} ${PROJECT_HEADERS} ${PROJECT_UI})
 conan_target_link_libraries(Client PRIVATE Qt5::Widgets Qt5::Core Qt5::Gui Qt5::Network)
 #target_link_libraries(Client PRIVATE Qt5::Widgets Qt5::Core Qt5::Gui Qt5::Network)
