@@ -149,13 +149,13 @@ void SQLiteDB::getMessageList(QString &messageList, QString firstUser, QString s
     }
 }
 
-void SQLiteDB::sendMessage(QString firstUser, QString secondUser, QString message, QString timestamp,
+void SQLiteDB::sendMessage(QString sender, QString recipient, QString message, QString timestamp,
                            int32_t &messageId)
 {
     QSqlQuery query(DB);
-    QString chatName = getChatName(firstUser, secondUser);
-    int32_t fromID = findUser(firstUser);
-    int32_t toID = findUser(secondUser);
+    QString chatName = getChatName(sender, recipient);
+    int32_t fromID = findUser(sender);
+    int32_t toID = findUser(recipient);
 
     query.prepare("INSERT INTO " + chatName + "(fromID, toID, message, timestamp) "
                                               "VALUES (:fromID, :toID, :message, :timestamp)");

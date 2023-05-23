@@ -111,18 +111,18 @@ void ClientUI::setChatWidget(QString name)
 void ClientUI::handleRegistration(QStringList result)
 {
     if (result[0] == "ILEN") {
-        QMessageBox::warning(this, "Registration failed", "Login and password length must be at least 4.");
+        QMessageBox::warning(this, "Registration error", "The length of the username and password should be at least 4.");
     }
     else if (result[0] == "ALRD") {
-        QMessageBox::warning(this, "Registration failed", "You have been already registered.");
+        QMessageBox::warning(this, "Registration error", "A user with that name is already registered.");
     }
-    else if (result[0] == "ISYM") {
-        QMessageBox::warning(this, "Registration failed", "You can not use these symbols for login:\n" +
-            result[1] + "\nYou can not youse these symbols for password:\n" +
-            result[2] + "\nPassword must contain at least one non-space symbol.");
+    else if (result[0] == "ICHR") {
+        QMessageBox::warning(this, "Registration error", "You cannot use these characters in the username:\n" +
+            result[1] + "\nYou cannot use these characters in the password:\n" +
+            result[2] + "\nThe password must contain at least one non-whitespace character.");
     }
     else if (result[0] == "SCSS") {
-        QMessageBox::information(this, "Registration success", "You are registered. Your login: " + result[1]);
+        QMessageBox::information(this, "Registration success", "You registered a user with the username" + result[1]);
         this->setAuthorizationWidget();
     }
 }
@@ -130,21 +130,21 @@ void ClientUI::handleRegistration(QStringList result)
 void ClientUI::handleAuthorization(QStringList result)
 {
     if (result[0] == "ILEN") {
-        QMessageBox::warning(this, "Authorization failed", "Login and password length must be at least 4.");
+        QMessageBox::warning(this, "Authorization error", "The length of the username and password should be at least 4.");
     }
     else if (result[0] == "NFND" || result[0] == "IPSW") {
-        QMessageBox::warning(this, "Authorization failed", "Incorrect login or password.");
+        QMessageBox::warning(this, "Authorization error", "Incorrect login or password.");
     }
-    else if (result[0] == "ISYM") {
-        QMessageBox::warning(this, "Authorization failed", "You can not use these symbols for login:\n" +
-            result[1] + "\nYou can not youse these symbols for password:\n" +
-            result[2] + "\nPassword must contain at least one non-space symbol.");
+    else if (result[0] == "ICHR") {
+        QMessageBox::warning(this, "Authorization error", "You cannot use these characters in the username:\n" +
+            result[1] + "\nYou cannot use these characters in the password:\n" +
+            result[2] + "\nThe password must contain at least one non-whitespace character.");
     }
     else if (result[0] == "SCSS") {
         // qDebug() << "Generated token: " << result[1];
         client->userLogin = result[2];
         client->saveToken(result[1]);
-        QMessageBox::information(this, "Authorization success", "You are logged in as " + client->userLogin);
+        QMessageBox::information(this, "Authorization success", "You logged in as " + client->userLogin);
         this->setUserListWidget();
     }
 }
@@ -206,16 +206,14 @@ void ClientUI::handleSendMessage(QStringList result)
                 chatWidget->ui->userNameLabel->text() == receiver) {
                 chatWidget->sendMessage(message, timestamp, messageId, clearEditLine.toInt());
             }
-            // one user can be logged in from different sockets simultaneously
-            // so we need to pass message
-            // QMessageBox::information(this, "Sending success", "Message was sent.");
+            // QMessageBox::information(this, "Sending success", "The message was sent.");
         }
         else {
             Chat *chatWidget = dynamic_cast<Chat *>(activeItem->widget());
             if (chatWidget != nullptr &&
                 chatWidget->ui->userNameLabel->text() == sender) {
                 chatWidget->receiveMessage(message, timestamp, messageId);
-                // QMessageBox::information(this, "Receiving success", "Message was received.");
+                // QMessageBox::information(this, "Retrieving success", "The message was received.");
             }
         }
     }
@@ -224,17 +222,17 @@ void ClientUI::handleSendMessage(QStringList result)
     }
     else {
         if (sender == client->userLogin) {
-            QMessageBox::warning(this, "Sending failed", "Message was not sent.");
+            QMessageBox::warning(this, "Error sending the message", "The message was not sent.");
         }
         else {
-            QMessageBox::warning(this, "Receiving failed", "Message was not received.");
+            QMessageBox::warning(this, "Error retrieving the message", "The message was not received.");
         }
     }
 }
 
 void ClientUI::handleIncorrectToken()
 {
-    QMessageBox::warning(this, "Request failed", "Incorrect token. Please log in.");
+    QMessageBox::warning(this, "Request error", "Incorrect token. Please log in.");
     this->client->clientSocket->sendLogOutRequest();
 }
 
@@ -250,9 +248,9 @@ void ClientUI::handleConnectionError(QStringList request)
 {
     while (client->clientSocket->tcpSocket->state() != QAbstractSocket::ConnectedState) {
         QMessageBox msgBox;
-        msgBox.setText("You are not connected to server. Would you like to try to connect?");
+        msgBox.setText("The connection to the server is not established. Would you like to try reconnecting?");
         QAbstractButton *pButtonExit = msgBox.addButton(tr("Exit"), QMessageBox::NoRole);
-        QAbstractButton *pButtonTryAgain = msgBox.addButton(tr("Try to connect"), QMessageBox::YesRole);
+        QAbstractButton *pButtonTryAgain = msgBox.addButton(tr("Try reconnecting"), QMessageBox::YesRole);
         msgBox.exec();
         if (msgBox.clickedButton() == pButtonTryAgain) {
             client->clientSocket->connectSocketToHost();
@@ -298,7 +296,7 @@ void ClientUI::handleEditMessage(QStringList result)
     }
     else {
         if (sender == client->userLogin) {
-            QMessageBox::warning(this, "Editing failed", "Message was not edited.");
+            QMessageBox::warning(this, "Error during modification", "The message has not been changed.");
         }
     }
 }

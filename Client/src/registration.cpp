@@ -27,6 +27,6 @@ void Registration::sign_up()
     if (password_1 == password_2) {
         emit signUpRequest(login, password_1);
     } else {
-        QMessageBox::warning(this, "Registration failed", "Password mismatch");
+        QMessageBox::warning(this, "Registration fail", "The passwords do not match");
     }
 }

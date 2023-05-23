@@ -4,6 +4,16 @@
 #include <random>
 #include <chrono>
 
+// Response descriptions:
+// "ILEN": incorrect length
+// "ICHR": incorrect characters
+// "ALRD": user is already registered
+// "SCSS": success
+// "NFND": user was not found
+// "IPSW": incorrect password
+// "ITKN": incorrect token
+
+
 Server::Server(QObject *parent)
     : QObject(parent)
 {
@@ -23,10 +33,10 @@ void Server::handleDisconnection(QTcpSocket *clientSocket)
         userIDToSocket.erase(secondIt);
     }
     else {
-        // It can occur in case of disconnected server
-        // and further reconnect to server.
-        // Formally, it's not an error
-        qDebug() << "Error while disconnecting socket";
+        // This could have happened, for example, in the following cases:
+        // 1) The server was restarted, and the connection with the client was restored.
+        // 2) The client logged out and closed the application.
+        qDebug() << "Disconnection from an unauthorized client";
     }
 }
 
@@ -40,25 +50,24 @@ QStringList Server::requestSeparation(QString text, QString sep)
 
 void Server::handleRegistrationRequest(QTcpSocket *clientSocket, QString &login, QString &password)
 {
-    qDebug() << "Checking data to sign up...";
-    qDebug() << "login: " << login << ", password: " << password;
+    qDebug() << "Registration data verification...";
+    qDebug() << "Login: " << login << ", password: " << password;
 
     QString result, message;
 
-    // add: login and password don't contain symbols like space and others
     if (login.length() < 4 || password.length() < 4) {
-        result = "ILEN"; // incorrect length
+        result = "ILEN";
     }
     else if (!isCorrectLogin(login) || !isCorrectPassword(password)) {
-        result = "ISYM"; // incorrect symbols
-        message = incorrectLoginSymbols + " /s " + incorrectPasswordSymbols;
+        result = "ICHR";
+        message = incorrectLoginCharacters + " /s " + incorrectPasswordCharacters;
     }
     else if (sqlitedb->findUser(login) != -1) {
         result = "ALRD";
     }
     else {
         int32_t id = sqlitedb->addUser(login, password);
-        qDebug() << "New user id: " << id;
+        qDebug() << "The ID of the registered user: " << id;
         result = "SCSS";
         message = login;
     }
@@ -67,30 +76,29 @@ void Server::handleRegistrationRequest(QTcpSocket *clientSocket, QString &login,
 
 void Server::handleAuthorizationRequest(QTcpSocket *clientSocket, QString &login, QString &password)
 {
-    qDebug() << "Checking data to log in...";
-    qDebug() << "login: " << login << ", password: " << password;
+    qDebug() << "Authentication data verification...";
+    qDebug() << "Login: " << login << ", password: " << password;
 
     QString result, message;
 
     if (login.length() < 4 || password.length() < 4) {
-        result = "ILEN"; // incorrect length
+        result = "ILEN";
     }
     else if (!isCorrectLogin(login) || !isCorrectPassword(password)) {
-        result = "ISYM"; // incorrect symbols
-        message = incorrectLoginSymbols + " /s " + incorrectPasswordSymbols;
+        result = "ICHR";
+        message = incorrectLoginCharacters + " /s " + incorrectPasswordCharacters;
     }
     else {
         int32_t userId = sqlitedb->findUser(login);
         qDebug() << "User ID in DB: " << userId;
         if (userId == -1) {
-            result = "NFND"; // not found
+            result = "NFND";
         }
         else if (!sqlitedb->checkPassword(userId, password)) {
-            result = "IPSW";// incorrect password
+            result = "IPSW";
         }
         else {
-            qDebug() << "Sender user sockets count before log in: " << userIDToSocket.count(userId);
-            // QString token = generateToken();
+            qDebug() << "The number of sender's sockets before authorization: " << userIDToSocket.count(userId);
             QString token, creationTimestamp;
             sqlitedb->getToken(userId, token, creationTimestamp);
             if (token == "" || !checkTimeStamp(creationTimestamp)) {
@@ -102,7 +110,7 @@ void Server::handleAuthorizationRequest(QTcpSocket *clientSocket, QString &login
             message = token + " /s " + login;
             userIDToSocket.insert(userId, clientSocket);
             socketToUserID[clientSocket] = userId;
-            qDebug() << "Sender user sockets count after log in: " << userIDToSocket.count(userId);
+            qDebug() << "The number of sender's sockets after authorization: " << userIDToSocket.count(userId);
         }
     }
     serverSocket->sendAuthorizationResponse(clientSocket, result, message);
@@ -117,7 +125,7 @@ void Server::handleContactListRequest(QTcpSocket *clientSocket, QString token)
         result = "SCSS /n ";
     }
     else {
-        result = "ITKN /n "; // incorrect token
+        result = "ITKN /n ";
     }
     serverSocket->sendContactListResponse(clientSocket, result + contactList);
 }
@@ -132,7 +140,7 @@ void Server::handleMessageListRequest(QTcpSocket *clientSocket, QString firstUse
         result = "SCSS /n ";
     }
     else {
-        result = "ITKN /n "; // incorrect token
+        result = "ITKN /n ";
     }
     // TODO: solve problem if message contains separator " /s "
     serverSocket->sendMessageListResponse(clientSocket, result + messageList);
@@ -149,7 +157,7 @@ void Server::handleSendMessageRequest(QTcpSocket *clientSocket, QString sender,
         result = "SCSS";
     }
     else {
-        result = "ITKN"; // incorrect token
+        result = "ITKN";
     }
 
     if (result == "ITKN") {
@@ -162,11 +170,11 @@ void Server::handleSendMessageRequest(QTcpSocket *clientSocket, QString sender,
         return;
     }
 
-    // Send response to other clients only if result is success
+    // Send the response to other clients only in case of success
     uint32_t senderUserId = sqlitedb->findUser(sender);
     auto senderUserSockets = userIDToSocket.equal_range(senderUserId);
-    qDebug() << "Actual sender clientSocket: " << clientSocket;
-    qDebug() << "Sender user sockets count: " << userIDToSocket.count(senderUserId);
+    qDebug() << "The current sender socket: " << clientSocket;
+    qDebug() << "The number of sender's sockets: " << userIDToSocket.count(senderUserId);
     for (auto it = senderUserSockets.first; it != senderUserSockets.second; ++it) {
         if (it.value() == clientSocket) {
             serverSocket->sendSendMessageResponse(it.value(), result, message, sender,
@@ -179,7 +187,7 @@ void Server::handleSendMessageRequest(QTcpSocket *clientSocket, QString sender,
     }
     if (sender != receiver) {
         uint32_t receiverUserId = sqlitedb->findUser(receiver);
-        qDebug() << "Receiver user sockets count: " << userIDToSocket.count(receiverUserId);
+        qDebug() << "The number of recipient's sockets: " << userIDToSocket.count(receiverUserId);
         auto receiverUserSockets = userIDToSocket.equal_range(receiverUserId);
         for (auto it = receiverUserSockets.first; it != receiverUserSockets.second; ++it) {
             serverSocket->sendSendMessageResponse(it.value(), result, message, sender,
@@ -191,22 +199,20 @@ void Server::handleSendMessageRequest(QTcpSocket *clientSocket, QString sender,
 void Server::handleLogOutRequest(QTcpSocket *clientSocket)
 {
     QString result;
-//  qDebug() << "Actual sender clientSocket: " << clientSocket;
     auto firstIt = socketToUserID.find(clientSocket);
     if (firstIt != socketToUserID.end()) {
         uint32_t id = firstIt.value();
-        qDebug() << "Sender user sockets count before log out: " << userIDToSocket.count(id);
+        qDebug() << "The number of user's sockets before logout: " << userIDToSocket.count(id);
         socketToUserID.erase(firstIt);
         auto secondIt = userIDToSocket.find(id, clientSocket);
         // secondIt != userIDToSocket.end()
         userIDToSocket.erase(secondIt);
-        qDebug() << "Sender user sockets count after log out: " << userIDToSocket.count(id);
+        qDebug() << "The number of user's sockets after logout: " << userIDToSocket.count(id);
     }
     else {
-        // It can occur in case of disconnected server
-        // and further reconnect to server.
-        // Formally, it's not an error
-        qDebug() << "Error while log out";
+        // This could have happened, for example, in the following cases:
+        // 1) The server was restarted, and the connection with the client was restored.
+        qDebug() << "Logout of an unauthorized client";
     }
     result = "SCSS";
     serverSocket->sendLogOutResponse(clientSocket, result);
@@ -223,11 +229,10 @@ void Server::handleEditMessageRequest(QTcpSocket *clientSocket,
     QString result;
     if (checkToken(clientSocket, token)) {
         sqlitedb->editMessage(sender, receiver, messageId, editedMessage);
-        sqlitedb->editMessage(receiver, sender, messageId, editedMessage);
         result = "SCSS";
     }
     else {
-        result = "ITKN"; // incorrect token
+        result = "ITKN";
     }
 
     if (result == "ITKN") {
@@ -238,15 +243,15 @@ void Server::handleEditMessageRequest(QTcpSocket *clientSocket,
 
     uint32_t senderUserId = sqlitedb->findUser(sender);
     auto senderUserSockets = userIDToSocket.equal_range(senderUserId);
-    qDebug() << "Actual sender clientSocket: " << clientSocket;
-    qDebug() << "Sender user sockets count: " << userIDToSocket.count(senderUserId);
+    qDebug() << "The current sender socket: " << clientSocket;
+    qDebug() << "The number of sender's sockets: " << userIDToSocket.count(senderUserId);
     for (auto it = senderUserSockets.first; it != senderUserSockets.second; ++it) {
         serverSocket->sendEditMessageResponse(it.value(), result, sender, receiver,
                                               editedMessage, messageChatIndex);
     }
     if (sender != receiver) {
         uint32_t receiverUserId = sqlitedb->findUser(receiver);
-        qDebug() << "Receiver user sockets count: " << userIDToSocket.count(receiverUserId);
+        qDebug() << "The number of recipient's sockets: " << userIDToSocket.count(receiverUserId);
         auto receiverUserSockets = userIDToSocket.equal_range(receiverUserId);
         for (auto it = receiverUserSockets.first; it != receiverUserSockets.second; ++it) {
             serverSocket->sendEditMessageResponse(it.value(), result, sender, receiver,
@@ -280,7 +285,7 @@ QString Server::generateToken()
 bool Server::checkToken(QTcpSocket *clientSocket, QString token)
 {
     int32_t userId = -1;
-    // if server was disconnected, socketToUserID can be empty, so...
+    // If server was disconnected, socketToUserID can be empty, so...
     auto it = socketToUserID.find(clientSocket);
     if (it != socketToUserID.end()) {
         userId = *it;
@@ -311,8 +316,8 @@ bool Server::checkTimeStamp(QString timeStamp)
 
 bool Server::isCorrectLogin(QString login)
 {
-    for (QChar symbol : incorrectLoginSymbols) {
-        if (login.contains(symbol)) {
+    for (QChar character : incorrectLoginCharacters) {
+        if (login.contains(character)) {
             return false;
         }
     }
@@ -321,14 +326,14 @@ bool Server::isCorrectLogin(QString login)
 
 bool Server::isCorrectPassword(QString password)
 {
-    for (QChar symbol : incorrectPasswordSymbols) {
-        if (password.contains(symbol)) {
+    for (QChar character : incorrectPasswordCharacters) {
+        if (password.contains(character)) {
             return false;
         }
     }
-    // check if at least one non space symbol
-    for (QChar symbol : password) {
-        if (symbol != " ") {
+    // Check if at least one non-whitespace character
+    for (QChar character : password) {
+        if (character != " ") {
             return true;
         }
     }

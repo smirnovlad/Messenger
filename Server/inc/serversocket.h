@@ -32,7 +32,7 @@ private:
                                  QString firstUser, QString secondUser, QString timestamp,
                                  int32_t messageId, bool toActualSender);
     void sendLogOutResponse(QTcpSocket *clientSocket, QString result);
-    void sendEditMessageResponse(QTcpSocket *clientSOcket, QString result,
+    void sendEditMessageResponse(QTcpSocket *clientSocket, QString result,
                                  QString sender, QString receiver,
                                  QString editedMessage, int32_t messageChatIndex);
 

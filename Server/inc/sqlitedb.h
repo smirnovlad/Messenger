@@ -26,7 +26,7 @@ public:
     int32_t addUser(QString login, QString password);
     void getContactList(QString &contactList);
     void getMessageList(QString &messageList, QString firstUser, QString secondUser);
-    void sendMessage(QString firstUser, QString secondUser, QString message, QString timestamp,
+    void sendMessage(QString sender, QString recipient, QString message, QString timestamp,
                      int32_t &messageId);
     void editMessage(QString firstUser, QString secondUser, int32_t messageId, QString editedMessage);
 

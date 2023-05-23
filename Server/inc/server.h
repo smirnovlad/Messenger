@@ -28,8 +28,8 @@ private:
     QMultiHash<uint32_t, QTcpSocket *> userIDToSocket;
     QHash<QTcpSocket *, uint32_t> socketToUserID;
 
-    QString incorrectLoginSymbols = "_' ,.!@#$%^&*()<>+=-/|~`\"";
-    QString incorrectPasswordSymbols = "/";
+    QString incorrectLoginCharacters = "_' ,.!@#$%^&*()<>+=-/|~`\"";
+    QString incorrectPasswordCharacters = "/";
 
     QString getConnectionTimeStamp();
     QString generateToken();

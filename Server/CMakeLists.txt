@@ -30,7 +30,6 @@ set(CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR})
 find_package(Qt5 COMPONENTS Widgets Core Sql Network REQUIRED)
 
 set(PROJECT_SOURCES
-        src/main.cpp
         src/server.cpp
         src/sqlitedb.cpp
         src/serversocket.cpp
@@ -40,8 +39,9 @@ set(PROJECT_HEADERS
         inc/server.h
         inc/sqlitedb.h
         inc/serversocket.h
+        inc/config.h
 )
 
-add_executable(Server ${PROJECT_SOURCES} ${PROJECT_HEADERS})
+add_executable(Server main.cpp ${PROJECT_SOURCES} ${PROJECT_HEADERS})
 conan_target_link_libraries(Server PRIVATE Qt5::Widgets Qt5::Core Qt5::Gui Qt5::Network)
 #target_link_libraries(Server PRIVATE Qt5::Widgets Qt5::Core Qt5::Sql Qt5::Network)
