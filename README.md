@@ -55,10 +55,7 @@ cd Client/build/bin/
 - Synchronous message editing
 
 ## Implementation details
+- [Documentation](documentation.docx)
 - [Behavioral diagram of the application](UML/model.png)
 - [Class diagram of the client-side of the application](UML/uml-Client.png)
 - [Class diagram of the server-side of the application](UML/uml-Server.png)
-
-
-
-Coming soon...
