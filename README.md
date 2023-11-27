@@ -3,6 +3,14 @@ A cross-platform desktop client-server messenger has been implemented.
 
 ![example_4](https://github.com/smirnovlad/Messenger/assets/86618271/13ce5b3c-4cb6-4587-bdea-9c0c3bc50343)
 
+## Current developments
+- User authorization and registration
+- Message history storage
+- Multi-device login with message synchronization
+- Token-based user authentication
+- Handling server crashes
+- Synchronous message editing
+
 ## How to build
 The Conan package manager and CMake are used for building the application.
 
@@ -45,14 +53,6 @@ cd Server/build/bin/
 cd Client/build/bin/
 ./Client
 ```
-
-## Current developments
-- User authorization and registration
-- Message history storage
-- Multi-device login with message synchronization
-- Token-based user authentication
-- Handling server crashes
-- Synchronous message editing
 
 ## Implementation details
 - [Documentation](documentation.docx)
